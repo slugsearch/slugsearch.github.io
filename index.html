@@ -499,18 +499,24 @@ button,input{font:inherit; color:inherit}
 const CONFIG = {
   subtitle: "Stevenson College · Fall Quarter 2026",
   // Google Sheet → File → Share → Publish to web → pick the PUBLIC tab → CSV → copy link.
-  sheetCsvUrl: "",
-  totalClues: 10,                // how many challenges there are this quarter
+  sheetCsvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vS0o1uqh1H2fIBcthT_QqvoUMOpSCckfhdSFExaWZDuUgqSDhDuAr6keP_HfHg2iUsqSJuuWIBBRIuE/pub?gid=1838503812&single=true&output=csv",
+  totalClues: 14,                // how many challenges there are this quarter
   // Every challenge, worded exactly like the form's options. They all show on the beach from day one.
   challenges: [
+    "Take a picture of yourself at a job interview/internship fair.",
+    "Take a picture of your latest resume.",
+    "Shoot a picture of yourself at a social event in cowell or stevenson.",
+    "Take a picture of yourself cooking dinner and eating together as a household.",
+    "Take a picture of a completed apartment or room chore chart for the duration of a month.",
+    "Take a picture of you recycling an item correctly at the recycling bins.",
+    "Take a group photo with all your apartment or room mates (in December)",
+    "Take a photo of yourself working out or playing a sport/exercising.",
+    "Take a photo of yourself picking flowers from or assisting with caring for the UCSC Farm.",
+    "Meet, in-person with your RA for a 1:1 check in.",
+    "Create a profile on a Job or Networking professional platform.",
     "Attend and check-in at a Cowell Senate or Stevenson Council mtg.",
     "Schedule and attend a meeting with your college affiliated advisor this quarter.",
-    "Make a consultation meeting with “On the Margins”",
-    "Meet, in-person with your RA for a 1:1 check in.",
-    "Take a group photo with all your apartment or room mates (in December)",
-    "Take a picture of yourself cooking dinner and eating together as a household.",
-    "Locate the student food pantry or emergency fund office."
-    // add the rest of the 10 here
+    "Make a consultation meeting with “On the Margins’"
   ],
   // ★ Starred challenges are worth starPoints instead of 1. Each entry is a phrase from the challenge's
   // wording (case-insensitive); a list means "any of these phrases".
@@ -533,7 +539,7 @@ const CONFIG = {
   requireApproval: false,
   initialRows: 20,
   // When a slug "evolves" on the map: stump → campus critter → volleyball
-  evolve: { critter: 5, volleyball: 11 },   // in points
+  evolve: { critter: 7, volleyball: 14 },   // in points (max is 20: 14 challenges, 6 of them ★)
   mapMarkers: 10,
   mapCrowd: 150,                  // everyone else shows as a small icon on the map (up to this many)
   tickets: 12
@@ -822,7 +828,7 @@ function sampleCSV(){
   const start = new Date("2026-09-26T09:00:00"), span = Date.now() - start;
   for (let i = 0; i < 42; i++){
     const name = `Person ${tag(i)}`, email = "person" + i + "@ucsc.edu", house = houses[i % houses.length];
-    const n = Math.max(1, Math.min(spots.length, Math.round(Math.pow(rnd(), 2) * 11)));
+    const n = Math.max(1, Math.min(spots.length, Math.round(Math.pow(rnd(), 2) * (spots.length + 1))));
     spots.map((s,j) => [rnd(), j]).sort((a,b) => a[0]-b[0]).slice(0, n).forEach(([, j]) => {
       const d = new Date(start.getTime() + Math.pow(rnd(), .6) * span);
       const ts = `${d.getMonth()+1}/${d.getDate()}/${d.getFullYear()} ${d.getHours()}:${String(d.getMinutes()).padStart(2,"0")}:00`;
