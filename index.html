@@ -1,0 +1,829 @@
+<title>Slug Search</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Bungee+Shade&family=Press+Start+2P&family=Figtree:wght@400;600;800;900&display=swap">
+<style>
+/* Layout: a Santa Cruz day trip that runs downhill. Boardwalk marquee at sunset → evolving trail map from Stevenson to the beach → stump podium → arcade high-score cabinet → prize-ticket finds → test-your-strength houses → beachcombing clues in the sand. */
+:root{
+  color-scheme:dark;
+  --night:#14214A; --sea:#0B5A73; --surf:#16A3A8; --foam:#E9FBF7; --sand:#F3DDB0; --sand-dk:#DDBF86;
+  --red:#D7263D; --orange:#FF8A3D; --gold:#FDC700; --sun:#FFE27A; --forest:#1F5A3A; --ucsc:#003C6C;
+  --cream:#FFF6E5; --ink:#1A1530; --cyan:#4FF3E8; --pink:#FF5FA2;
+  --bark:#7A3B26; --bark-dk:#4A2214; --ring:#EBC98F; --ring-dk:#D9AE70;
+  --sign:"Bungee", "Arial Black", system-ui, sans-serif;
+  --shade:"Bungee Shade", "Bungee", "Arial Black", system-ui, sans-serif;
+  --pixel:"Press Start 2P", ui-monospace, Menlo, monospace;
+  --body:"Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0; font-family:var(--body); font-size:16px; line-height:1.5; color:var(--cream);
+  background:var(--night) linear-gradient(180deg, #14214A 0%, #123C66 30%, var(--sea) 62%, #0C6E80 100%)}
+.wrap{max-width:1120px; margin:0 auto; padding-inline:18px; padding-block:16px 0; display:grid; grid-template-columns:minmax(0,1fr); gap:72px}
+.wrap > *{min-width:0}
+h1,h2,h3{margin:0; font-weight:400; text-wrap:balance}
+button,input{font:inherit; color:inherit}
+:focus-visible{outline:3px solid var(--gold); outline-offset:3px}
+.kicker{font-family:var(--sign); font-size:12px; letter-spacing:.12em; text-transform:uppercase}
+
+/* ---------- hero: boardwalk at sunset ---------- */
+.hero{position:relative; border-radius:32px; overflow:hidden; isolation:isolate; padding:20px clamp(16px,4vw,48px) 150px; display:grid; gap:26px; justify-items:center; text-align:center}
+.scene{position:absolute; inset:0; z-index:-1}
+.scene svg{width:100%; height:100%; display:block}
+.topbar{width:100%; display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap}
+.chip{background:rgba(20,33,74,.65); color:var(--sun); border-radius:999px; padding:5px 12px}
+.chip.warn{background:var(--red); color:var(--cream)}
+.refresh{background:var(--gold); color:var(--ink); border:0; border-radius:999px; padding:8px 16px; font-family:var(--sign); font-size:13px; cursor:pointer; box-shadow:0 4px 0 #9C7A00}
+.refresh:active{transform:translateY(3px); box-shadow:0 1px 0 #9C7A00}
+.marquee{position:relative; background:var(--red); border-radius:28px; padding:22px clamp(18px,4vw,46px) 18px; transform:rotate(-1.5deg);
+  border:14px dotted var(--sun); box-shadow:0 0 0 6px var(--ink), 0 0 40px rgba(255,226,122,.55), 0 18px 0 rgba(0,0,0,.25); max-width:100%}
+@media (prefers-reduced-motion: no-preference){.marquee{animation:bulbs 1.6s steps(2) infinite}}
+@keyframes bulbs{50%{border-color:var(--orange); box-shadow:0 0 0 6px var(--ink), 0 0 26px rgba(255,138,61,.6), 0 18px 0 rgba(0,0,0,.25)}}
+.marquee .est{font-family:var(--sign); font-size:12px; color:var(--sun); letter-spacing:.2em}
+.marquee h1{font-family:var(--shade); color:var(--gold); font-size:clamp(46px, 10.5vw, 118px); line-height:.95; margin:4px 0}
+.marquee h1 span{display:block}
+.marquee .plaque{display:inline-block; background:var(--cream); color:var(--red); font-family:var(--sign); font-size:clamp(11px,1.6vw,14px); padding:4px 14px; border-radius:6px; letter-spacing:.08em}
+.tagline{max-width:46ch; font-size:clamp(17px,2.2vw,20px); font-weight:600; background:rgba(20,33,74,.72); padding:12px 18px; border-radius:18px; margin:0}
+.tagline b{color:var(--gold)}
+.scoreboard{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); width:min(100%,860px); background:var(--ink); border-radius:14px; border:4px solid #2B2550; overflow:hidden}
+.scoreboard div{padding:12px 10px; display:grid; gap:8px; justify-items:center; min-width:0}
+.scoreboard div + div{border-left:3px dashed #2B2550}
+.scoreboard .k{font-family:var(--sign); font-size:11px; color:var(--orange); letter-spacing:.1em}
+.scoreboard .v{font-family:var(--pixel); font-size:clamp(14px,2.4vw,22px); color:var(--gold); text-shadow:0 0 8px rgba(253,199,0,.7); max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.scoreboard .v.sm{font-size:clamp(9px,1.4vw,12px); line-height:1.6; white-space:normal; color:var(--pink); text-shadow:0 0 8px rgba(255,95,162,.6)}
+@media (max-width:640px){.scoreboard{grid-template-columns:repeat(2,minmax(0,1fr))}.scoreboard div:nth-child(3){border-left:0}.scoreboard div:nth-child(n+3){border-top:3px dashed #2B2550}}
+.surfer{position:absolute; right:clamp(4px,4vw,60px); bottom:22px; width:clamp(150px,22vw,250px)}
+@media (prefers-reduced-motion: no-preference){.surfer{animation:bob 3.2s ease-in-out infinite}}
+@keyframes bob{50%{transform:translateY(-8px) rotate(-3deg)}}
+.surfer svg{width:100%; height:auto; display:block}
+
+/* ---------- downhill dash map ---------- */
+.dash{display:grid; grid-template-columns:minmax(0,1.55fr) minmax(0,1fr); gap:34px; align-items:start}
+@media (max-width:860px){.dash{grid-template-columns:1fr}}
+.dash-copy{position:sticky; top:calc(env(safe-area-inset-top, 0px) + 16px)}
+@media (max-width:860px){.dash-copy{position:static}}
+.dash-copy b{color:var(--gold)}
+.mapcard{background:var(--cream); border-radius:24px; padding:12px; box-shadow:0 18px 0 rgba(0,0,0,.18); transform:rotate(.6deg)}
+.mapcard svg{width:100%; height:auto; display:block; border-radius:14px}
+.roadsign{display:inline-block; background:var(--forest); color:var(--cream); font-family:var(--sign); font-size:clamp(26px,4.6vw,42px); line-height:1.05; padding:12px 20px; border-radius:12px; border:4px solid var(--cream); box-shadow:0 0 0 4px var(--forest)}
+.roadsign small{display:block; font-size:.4em; letter-spacing:.14em; color:var(--sun)}
+.dash-copy p{color:#CFE3EC; max-width:44ch}
+.legend{list-style:none; padding:0; margin:10px 0 0; display:grid; gap:8px}
+.critter{cursor:help; transition:transform .2s; transform-box:fill-box; transform-origin:center bottom}
+.critter:hover{transform:scale(1.25) rotate(-4deg)}
+.pin{cursor:help}
+.pin > use{transition:transform .2s; transform-box:fill-box; transform-origin:center bottom}
+.pin:hover > use{transform:scale(1.2)}
+.pin.small > use{opacity:.92}
+.pin.small:hover > use{transform:scale(1.6)}
+@media (prefers-reduced-motion: no-preference){.pin:not(.small) > use{animation:idle 2.6s ease-in-out infinite}}
+@keyframes idle{50%{transform:translateY(-2px)}}
+.stages{list-style:none; padding:0; margin:16px 0 0; display:grid; gap:8px}
+.stages li{display:grid; grid-template-columns:52px minmax(0,1fr) auto; gap:12px; align-items:center; background:var(--cream); color:var(--ink); border-radius:14px; padding:8px 14px 8px 10px; border:3px solid var(--ink)}
+.stages li:nth-child(2){background:#D9EBC5}
+.stages li:nth-child(3){background:var(--sand)}
+.stages svg{width:46px; height:40px}
+.stages b{display:block; font-family:var(--sign); font-weight:400; font-size:15px; color:var(--ink)}
+.stages small{font-weight:600; opacity:.75}
+.stages .rg{font-family:var(--pixel); font-size:10px}
+.legend-title{font-family:var(--sign); font-size:16px; color:var(--sun); margin-top:26px}
+.legend .form svg{width:34px; height:30px; display:block}
+.legend-note{margin:4px 0 0; font-size:14px; color:#A9C6D6}
+.legend li{display:grid; grid-template-columns:34px 34px minmax(0,1fr) auto; gap:12px; align-items:center; background:rgba(20,33,74,.6); border-radius:14px; padding:8px 12px}
+.badge{width:32px; height:32px; border-radius:50%; display:grid; place-items:center; font-family:var(--sign); font-size:14px; color:var(--ink); background:var(--cream); border:3px solid var(--ink)}
+.badge.g{background:var(--gold)} .badge.o{background:var(--orange)} .badge.t{background:var(--surf)}
+.legend b{display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.legend small{color:#A9C6D6}
+.legend .n{font-family:var(--pixel); font-size:12px; color:var(--gold)}
+
+/* ---------- stump podium ---------- */
+.pod-head{text-align:center; margin-bottom:46px}
+.sign{display:inline-block; position:relative; padding:12px 30px 14px; border-radius:10px; transform:rotate(-1.5deg); font-family:var(--sign); color:var(--cream);
+  background:repeating-linear-gradient(176deg, rgba(0,0,0,.10) 0 3px, transparent 3px 11px), linear-gradient(180deg, var(--bark), #64301E);
+  box-shadow:0 6px 0 var(--bark-dk), 0 14px 24px rgba(0,0,0,.35); font-size:clamp(26px,5vw,44px); line-height:1.05; text-shadow:0 2px 0 var(--bark-dk)}
+.sign::before,.sign::after{content:""; position:absolute; top:12px; width:9px; height:9px; border-radius:50%; background:#C9B79C; box-shadow:inset -2px -2px 0 rgba(0,0,0,.35)}
+.sign::before{left:10px}.sign::after{right:10px}
+.sign .hl{color:var(--gold)}
+.podium{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; align-items:end; grid-template-areas:"second first third"; max-width:860px; margin:0 auto}
+.stand{display:grid; justify-items:center; text-align:center; min-width:0}
+.stand > svg{width:min(140px,88%); height:auto; position:relative; z-index:2; margin-bottom:-22px}
+.stump{position:relative; width:100%; border-radius:0 0 18px 18px; display:grid; align-content:center; justify-items:center; gap:2px; padding:34px 10px 18px; color:var(--cream);
+  background:repeating-linear-gradient(90deg, rgba(0,0,0,.18) 0 3px, transparent 3px 16px), linear-gradient(90deg, var(--bark-dk), var(--bark) 45%, var(--bark-dk))}
+.stump::before{content:""; position:absolute; left:-2px; right:-2px; top:-22px; height:44px; border-radius:50%; border:5px solid var(--bark-dk);
+  background:radial-gradient(ellipse, #F4DDA9 0 10%, transparent 11%), repeating-radial-gradient(ellipse, var(--ring) 0 5px, var(--ring-dk) 5px 7px)}
+.stump .pl{font-family:var(--shade); font-size:clamp(30px,5.4vw,52px); line-height:1; color:var(--gold); text-shadow:0 3px 0 var(--bark-dk)}
+.stump .nm{font-weight:800; font-size:17px; overflow-wrap:anywhere}
+.stump small{color:var(--ring); font-size:13px; font-weight:600}
+.s1{grid-area:first}.s1 .stump{min-height:220px}
+.s2{grid-area:second}.s2 .stump{min-height:165px}
+.s3{grid-area:third}.s3 .stump{min-height:128px}
+.pod-empty{grid-column:1 / -1; text-align:center; color:#CFE3EC}
+@media (max-width:560px){.podium{grid-template-columns:1fr; grid-template-areas:"first" "second" "third"; gap:44px}.stump{min-height:0!important}}
+
+/* ---------- arcade cabinet ---------- */
+.cabinet{justify-self:center; width:min(100%, 820px); background:linear-gradient(180deg, #2B2550, #1A1530); border-radius:40px 40px 18px 18px; padding:0 22px 26px; box-shadow:0 22px 0 rgba(0,0,0,.25), inset 0 0 0 6px #3A3270}
+.cab-top{margin:0 -22px 18px; background:var(--pink); border-radius:40px 40px 0 0; padding:18px; text-align:center; font-family:var(--shade); color:var(--ink); font-size:clamp(28px,5.6vw,52px); line-height:1; border-bottom:8px solid var(--ink)}
+.screen{background:#07060F; border-radius:22px; padding:22px clamp(12px,3vw,28px); position:relative; overflow:hidden; border:6px solid #000; box-shadow:inset 0 0 40px rgba(79,243,232,.12)}
+.screen::after{content:""; position:absolute; inset:0; pointer-events:none; background:repeating-linear-gradient(0deg, rgba(255,255,255,.04) 0 2px, transparent 2px 4px)}
+.hot{font-family:var(--pixel); font-size:clamp(9px,1.6vw,12px); color:var(--orange); text-align:center; line-height:1.8; margin-bottom:16px}
+.hot b{color:var(--gold)}
+.entry{display:flex; gap:10px; align-items:center; justify-content:center; margin-bottom:18px; flex-wrap:wrap}
+.entry label{font-family:var(--pixel); font-size:11px; color:var(--cyan)}
+.entry input{background:#000; border:2px solid var(--cyan); color:var(--gold); font-family:var(--pixel); font-size:11px; padding:9px 10px; width:min(240px,100%); text-transform:uppercase}
+.entry input::placeholder{color:#3E7F7B}
+.scores{font-family:var(--pixel); font-size:clamp(9px,1.7vw,13px); display:grid; gap:12px}
+.scores .h{color:#7C79A8}
+.srow{display:grid; grid-template-columns:5ch minmax(0,1fr) 7ch 6ch; gap:10px; align-items:center}
+.srow .nm{overflow:hidden; text-overflow:ellipsis; white-space:nowrap; text-transform:uppercase}
+.srow .hs{text-align:right; color:#7C79A8; font-size:.8em}
+.srow .sc{text-align:right}
+.srow:nth-child(5n+2){color:var(--gold)} .srow:nth-child(5n+3){color:var(--cyan)} .srow:nth-child(5n+4){color:var(--pink)} .srow:nth-child(5n+5){color:var(--orange)} .srow:nth-child(5n+6){color:#9DFF7A}
+.tagHot{color:var(--red)!important; margin-left:8px; font-size:.8em}
+@media (prefers-reduced-motion: no-preference){.tagHot{animation:blink 1s steps(2) infinite}}
+@keyframes blink{50%{opacity:0}}
+@media (max-width:520px){.srow{grid-template-columns:4ch minmax(0,1fr) 5ch}.srow .hs{display:none}}
+.none{color:#7C79A8; text-align:center; padding:12px 0}
+.start{display:block; margin:22px auto 0; background:none; border:0; font-family:var(--pixel); font-size:11px; color:var(--cyan); cursor:pointer}
+@media (prefers-reduced-motion: no-preference){.start{animation:blink 1.2s steps(2) infinite}}
+.controls{display:flex; justify-content:center; gap:26px; margin-top:20px}
+.controls span{width:30px; height:30px; border-radius:50%; background:var(--red); box-shadow:0 5px 0 #7A1522}
+.controls span:nth-child(2){background:var(--gold); box-shadow:0 5px 0 #9C7A00}
+.controls span:nth-child(3){background:var(--cyan); box-shadow:0 5px 0 #1C8F87}
+
+/* ---------- ticket booth ---------- */
+.booth-head{display:flex; align-items:end; justify-content:space-between; gap:14px; flex-wrap:wrap; margin-bottom:18px}
+.booth-sign{font-family:var(--sign); font-size:clamp(28px,5vw,44px); line-height:1; color:var(--gold); text-shadow:3px 3px 0 var(--red)}
+.booth-head p{margin:0; color:#CFE3EC}
+.tickets{display:flex; gap:16px; overflow-x:auto; padding:8px 4px 18px; scroll-snap-type:x mandatory}
+.ticket{flex:0 0 230px; scroll-snap-align:start; color:var(--ink); padding:16px 26px; display:grid; gap:4px; position:relative;
+  -webkit-mask:radial-gradient(circle 9px at 0 50%, #0000 98%, #000) left/51% 100% no-repeat, radial-gradient(circle 9px at 100% 50%, #0000 98%, #000) right/51% 100% no-repeat;
+          mask:radial-gradient(circle 9px at 0 50%, #0000 98%, #000) left/51% 100% no-repeat, radial-gradient(circle 9px at 100% 50%, #0000 98%, #000) right/51% 100% no-repeat}
+.ticket:nth-child(3n+1){background:var(--orange)} .ticket:nth-child(3n+2){background:var(--sun)} .ticket:nth-child(3n){background:var(--surf)}
+.ticket:nth-child(odd){transform:rotate(-1.5deg)} .ticket:nth-child(even){transform:rotate(1.5deg)}
+.ticket .adm{font-family:var(--sign); font-size:11px; letter-spacing:.2em; border-bottom:2px dashed rgba(26,21,48,.45); padding-bottom:6px; display:flex; justify-content:space-between}
+.ticket b{font-family:var(--sign); font-size:19px; line-height:1.1; overflow-wrap:anywhere}
+.ticket .what{font-weight:600; line-height:1.3}
+.ticket .when{font-size:13px; opacity:.75}
+
+/* ---------- test your strength ---------- */
+.strength{background:var(--ucsc); border-radius:28px; padding:28px clamp(14px,3vw,30px) 22px; box-shadow:inset 0 0 0 6px var(--gold)}
+.strength h2{font-family:var(--sign); font-size:clamp(26px,5vw,44px); text-align:center; color:var(--gold); line-height:1}
+.strength h2 small{display:block; font-size:.36em; color:var(--cream); letter-spacing:.16em; margin-top:8px}
+.towers{display:grid; grid-auto-flow:column; grid-auto-columns:minmax(0,1fr); gap:10px; margin-top:80px; align-items:end}
+@media (max-width:640px){.towers{grid-auto-flow:row; grid-template-columns:repeat(3,minmax(0,1fr)); row-gap:80px}.towers .pole{height:190px}}
+.tower{display:grid; justify-items:center; gap:8px; min-width:0}
+.pole{position:relative; width:30px; height:280px; background:repeating-linear-gradient(0deg, var(--cream) 0 2px, transparent 2px 28px), linear-gradient(90deg, #C9C2E6, #FFFFFF 50%, #C9C2E6); border-radius:10px 10px 0 0; border:3px solid var(--ink)}
+.bell{position:absolute; top:-30px; left:50%; transform:translateX(-50%); width:38px}
+.ding{position:absolute; top:-62px; left:50%; transform:translateX(-50%) rotate(-8deg); font-family:var(--sign); font-size:14px; color:var(--ink); background:var(--gold); padding:2px 8px; border-radius:6px; white-space:nowrap}
+.puck{position:absolute; left:50%; width:54px; transform:translate(-50%, 50%)}
+.puck svg{width:100%; height:auto; display:block}
+.base{width:100%; background:var(--red); color:var(--cream); text-align:center; border-radius:8px; padding:6px 4px; border:3px solid var(--ink)}
+.base b{display:block; font-family:var(--sign); font-size:13px; overflow-wrap:anywhere}
+.base span{font-size:12px; font-weight:600}
+
+/* ---------- beach ---------- */
+.beach{position:relative; margin-top:72px; padding:90px 18px 40px; background:var(--sand); color:var(--ink);
+  background-image:radial-gradient(rgba(150,110,50,.25) 1.2px, transparent 1.6px); background-size:16px 16px}
+.beach::before{content:""; position:absolute; left:0; right:0; top:-1px; height:70px; background:var(--foam);
+  -webkit-mask:radial-gradient(40px 30px at 40px 0, #000 98%, #0000) 0 0/80px 100% repeat-x; mask:radial-gradient(40px 30px at 40px 0, #000 98%, #0000) 0 0/80px 100% repeat-x}
+.beach-head{max-width:1084px; margin:0 auto 26px; display:flex; justify-content:space-between; align-items:end; gap:14px; flex-wrap:wrap}
+.surfboard{display:inline-block; background:var(--surf); color:var(--cream); font-family:var(--sign); font-size:clamp(24px,4.6vw,40px); padding:12px 44px; border-radius:999px; border:4px solid var(--ink); box-shadow:inset 0 0 0 6px var(--cream); transform:rotate(-2deg)}
+.beach-head p{margin:0; max-width:44ch; font-weight:600}
+.shells{max-width:1084px; margin:0 auto; display:grid; grid-template-columns:repeat(auto-fill, minmax(140px,1fr)); gap:22px 16px}
+.shell{display:grid; justify-items:center; text-align:center; gap:4px; min-width:0}
+.shell svg{width:74px; height:auto}
+.shell:nth-child(3n+1) svg{transform:rotate(-10deg)} .shell:nth-child(3n) svg{transform:rotate(8deg)}
+.shell b{font-weight:800; line-height:1.2; overflow-wrap:anywhere}
+.shell span{font-size:13px}
+.shell .tough{display:inline-block; background:var(--red); color:var(--cream); border-radius:999px; padding:0 8px; font-size:11px; font-weight:800; letter-spacing:.06em}
+.shell.buried b{font-family:var(--sign); font-weight:400; font-size:22px; color:var(--red)}
+.foot{max-width:1084px; margin:40px auto 0; padding-top:18px; border-top:2px dashed var(--sand-dk); text-align:center; font-size:14px; font-weight:600}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="shell" viewBox="0 0 80 70">
+      <path d="M40 66 L8 30 C6 14 22 4 40 4 C58 4 74 14 72 30 Z" fill="currentColor" stroke="#1A1530" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M40 64 L16 14 M40 64 L28 7 M40 64 L40 5 M40 64 L52 7 M40 64 L64 14" stroke="#1A1530" stroke-width="2.4" opacity=".55"/>
+      <path d="M30 60 h20 l-4 8 h-12z" fill="currentColor" stroke="#1A1530" stroke-width="3" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="dig" viewBox="0 0 80 70">
+      <ellipse cx="40" cy="44" rx="34" ry="16" fill="#DDBF86"/>
+      <path d="M24 30 L56 58 M56 30 L24 58" stroke="#D7263D" stroke-width="8" stroke-linecap="round"/>
+    </symbol>
+    <linearGradient id="sunset" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2B1E5C"/><stop offset=".38" stop-color="#C2416B"/><stop offset=".62" stop-color="#FF8A3D"/><stop offset=".7" stop-color="#FFC75A"/>
+    </linearGradient>
+  </defs>
+</svg>
+
+<div class="wrap">
+  <section class="hero" aria-label="Slug Search">
+    <div class="scene" aria-hidden="true">
+      <svg viewBox="0 0 1200 760" preserveAspectRatio="xMidYMax slice">
+        <rect width="1200" height="760" fill="url(#sunset)"/>
+        <circle cx="600" cy="520" r="120" fill="#FFE27A" opacity=".9"/>
+        <g fill="#FFF6E5" opacity=".18"><ellipse cx="260" cy="200" rx="120" ry="16"/><ellipse cx="900" cy="150" rx="150" ry="18"/><ellipse cx="1040" cy="260" rx="90" ry="12"/></g>
+        <g id="coaster" stroke="#1A1530" fill="none"></g>
+        <g fill="#14301F"><path d="M1080 520 L1110 300 L1140 520Z"/><path d="M1130 520 L1165 250 L1200 520Z"/><path d="M1040 520 L1062 380 L1084 520Z"/></g>
+        <rect y="520" width="1200" height="240" fill="#0B5A73"/>
+        <g fill="#FFE27A" opacity=".55"><rect x="520" y="532" width="160" height="5" rx="2"/><rect x="545" y="550" width="110" height="4" rx="2"/><rect x="568" y="566" width="64" height="4" rx="2"/></g>
+        <path d="M0 600 Q75 575 150 600 T300 600 T450 600 T600 600 T750 600 T900 600 T1050 600 T1200 600 V760 H0Z" fill="#16A3A8"/>
+        <path d="M0 660 Q100 630 200 660 T400 660 T600 660 T800 660 T1000 660 T1200 660 V760 H0Z" fill="#0E7C86"/>
+        <path d="M0 600 Q75 575 150 600 T300 600 T450 600 T600 600 T750 600 T900 600 T1050 600 T1200 600" stroke="#E9FBF7" stroke-width="5" fill="none" opacity=".8"/>
+      </svg>
+    </div>
+    <div class="topbar">
+      <span class="chip kicker" id="subtitle"></span>
+      <span style="display:flex; gap:8px; align-items:center">
+        <span class="chip warn kicker" id="banner" hidden>Showing example data</span>
+        <button class="refresh" id="refresh" type="button">Refresh</button>
+      </span>
+    </div>
+    <div class="marquee">
+      <div class="est">★ STEVENSON PRESENTS ★</div>
+      <h1><span>SLUG</span><span>SEARCH</span></h1>
+      <span class="plaque">SANTA CRUZ, CALIFORNIA</span>
+    </div>
+    <p class="tagline">Clues are hidden from the redwoods to the sand. Find one, submit the form, and your slug moves <b>downhill toward the Boardwalk</b>. I think Sammy said slow and steady wins… but going fast is also fun.</p>
+    <div class="scoreboard" aria-label="Hunt totals">
+      <div><span class="k">SLUGS IN</span><span class="v" id="sPlayers">–</span></div>
+      <div><span class="k">CLUES FOUND</span><span class="v" id="sFinds">–</span></div>
+      <div><span class="k">ON FIRE</span><span class="v sm" id="sStreak">–</span></div>
+      <div><span class="k">DAYS LEFT</span><span class="v" id="sDays">–</span></div>
+    </div>
+    <div class="surfer" aria-hidden="true">
+      <svg viewBox="0 0 260 150">
+        <path d="M10 118 C60 96 190 92 250 112 C220 132 70 140 10 118Z" fill="#D7263D" stroke="#1A1530" stroke-width="4"/>
+        <path d="M40 118 C100 108 170 108 230 114" stroke="#FFF6E5" stroke-width="4" fill="none"/>
+        <path d="M50 108 C70 108 82 92 110 88 C138 84 156 76 166 58 C174 42 200 42 204 64 C208 86 190 104 160 108 C130 112 80 114 50 108Z" fill="#FDC700" stroke="#1A1530" stroke-width="3"/>
+        <g fill="#8A6A00" opacity=".55"><ellipse cx="110" cy="100" rx="5" ry="3"/><ellipse cx="136" cy="94" rx="4" ry="2.4"/></g>
+        <path d="M180 48 l-6 -26 M194 50 l10 -26" stroke="#FDC700" stroke-width="6" stroke-linecap="round"/>
+        <rect x="160" y="12" width="56" height="16" rx="8" fill="#1A1530"/>
+        <circle cx="174" cy="20" r="7" fill="#4FF3E8" stroke="#1A1530" stroke-width="3"/><circle cx="204" cy="22" r="7" fill="#4FF3E8" stroke="#1A1530" stroke-width="3"/>
+        <path d="M182 74 q8 7 16 -1" stroke="#1A1530" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+        <path d="M0 130 Q30 112 60 130 T120 130 T180 130 T240 130 T260 130 V150 H0Z" fill="#E9FBF7" opacity=".85"/>
+      </svg>
+    </div>
+  </section>
+
+  <section class="dash" aria-labelledby="dashTitle">
+    <div class="mapcard">
+      <svg id="map" viewBox="0 0 600 1000" role="img" aria-label="Trail map from Stevenson College down through the redwoods, the Great Meadow and downtown to the beach. Slugs start as stumps, turn into campus critters in the meadow, and become volleyballs at the beach.">
+        <defs>
+          <symbol id="deer" viewBox="0 0 50 44">
+            <path d="M12 30 v12 M18 31 v11 M28 31 v11 M33 29 v13" stroke="#6E4224" stroke-width="2.6" stroke-linecap="round"/>
+            <ellipse cx="22" cy="24" rx="14" ry="8" fill="#A0673C"/>
+            <path d="M8 20 l-4 -4 l2 7z" fill="#FFF6E5"/>
+            <path d="M31 22 L37 8 L42 10 L37 24Z" fill="#A0673C"/>
+            <ellipse cx="42" cy="9" rx="6.5" ry="4" fill="#A0673C"/>
+            <path d="M37 6 l-5 -3 l4 6z" fill="#A0673C"/>
+            <path d="M40 5 l-3 -5 M38.5 2.5 l-3 -1 M43 5 l2 -5 M44 2.5 l3 -1" stroke="#5B3A22" stroke-width="1.6" stroke-linecap="round"/>
+            <circle cx="43" cy="8" r="1" fill="#1A1530"/><circle cx="48" cy="10" r="1.3" fill="#1A1530"/>
+          </symbol>
+          <symbol id="turkey" viewBox="0 0 46 44">
+            <path d="M18 32 L0 32 A18 18 0 0 1 27 16 Z" fill="#8B5A2B"/>
+            <path d="M5 32 A13 13 0 0 1 24 20" stroke="#FFF6E5" stroke-width="1.6" fill="none" opacity=".7"/>
+            <path d="M10 32 A8 8 0 0 1 21 25" stroke="#FFF6E5" stroke-width="1.6" fill="none" opacity=".7"/>
+            <path d="M24 37 l-1 6 M29 37 l1 6" stroke="#FF8A3D" stroke-width="2" stroke-linecap="round"/>
+            <ellipse cx="26" cy="30" rx="10" ry="8.5" fill="#4A2E1C"/>
+            <path d="M32 26 Q36 18 36 12" stroke="#4A2E1C" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+            <circle cx="37" cy="11" r="3.8" fill="#9FB6D9"/>
+            <path d="M39 13 q2 5 -1 7" stroke="#D7263D" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+            <path d="M40 10 l4 1 l-4 1.5z" fill="#FDC700"/><circle cx="37.5" cy="10" r=".9" fill="#1A1530"/>
+          </symbol>
+          <symbol id="squirrel" viewBox="0 0 44 44">
+            <path d="M16 38 C2 36 0 18 8 10 C14 4 24 8 19 16 C15 22 16 31 23 36 Z" fill="#8C7B6B"/>
+            <ellipse cx="26" cy="31" rx="8" ry="9" fill="#9C8A78"/>
+            <circle cx="31" cy="19" r="6" fill="#9C8A78"/>
+            <path d="M29 14 l1 -5 l3 5z" fill="#9C8A78"/>
+            <circle cx="33" cy="18" r="1.1" fill="#1A1530"/>
+            <ellipse cx="34" cy="29" rx="3" ry="3.6" fill="#B07A3A"/><path d="M31 26 h6" stroke="#5B3A22" stroke-width="2" stroke-linecap="round"/>
+          </symbol>
+          <symbol id="rabbit" viewBox="0 0 44 44">
+            <ellipse cx="22" cy="31" rx="11" ry="9" fill="#C9B49A"/>
+            <circle cx="11" cy="30" r="4" fill="#FFF6E5"/>
+            <ellipse cx="29" cy="7" rx="2.6" ry="8" fill="#C9B49A" transform="rotate(-12 29 7)"/>
+            <ellipse cx="35" cy="8" rx="2.6" ry="8" fill="#C9B49A" transform="rotate(14 35 8)"/>
+            <ellipse cx="35" cy="8.5" rx="1" ry="5" fill="#F2A7A0" transform="rotate(14 35 8)"/>
+            <circle cx="32" cy="20" r="6.5" fill="#C9B49A"/>
+            <circle cx="34.5" cy="19" r="1.1" fill="#1A1530"/><circle cx="38.3" cy="21.5" r="1" fill="#F2A7A0"/>
+          </symbol>
+          <symbol id="coyote" viewBox="0 0 52 44">
+            <path d="M14 26 C4 28 2 36 6 42 C9 36 11 32 17 29Z" fill="#9C7646"/>
+            <path d="M14 30 v12 M19 31 v11 M29 31 v11 M34 29 v13" stroke="#7E5E36" stroke-width="2.6" stroke-linecap="round"/>
+            <ellipse cx="24" cy="26" rx="13" ry="6.5" fill="#B08A5A"/>
+            <path d="M32 24 L40 8 L46 11 L38 27Z" fill="#B08A5A"/>
+            <path d="M40 8 L46 2 L47 11Z" fill="#B08A5A"/>
+            <path d="M39 9 l-1 -7 l4 5z" fill="#9C7646"/>
+            <circle cx="42" cy="9" r="1" fill="#1A1530"/>
+          </symbol>
+          <symbol id="raccoon" viewBox="0 0 50 44">
+            <g transform="rotate(-28 12 28)"><rect x="0" y="24" width="16" height="7" rx="3.5" fill="#8A8A92"/><rect x="3" y="24" width="2.6" height="7" fill="#2E2A36"/><rect x="8.5" y="24" width="2.6" height="7" fill="#2E2A36"/></g>
+            <path d="M16 33 v8 M22 34 v7 M30 34 v7 M35 33 v8" stroke="#4A4652" stroke-width="2.6" stroke-linecap="round"/>
+            <ellipse cx="25" cy="29" rx="12" ry="7.5" fill="#8A8A92"/>
+            <path d="M33 16 l1 -6 l4 5z M41 15 l2 -6 l2 6z" fill="#8A8A92"/>
+            <circle cx="38" cy="21" r="7.5" fill="#8A8A92"/>
+            <ellipse cx="38.5" cy="20" rx="6.5" ry="2.8" fill="#2E2A36"/>
+            <circle cx="36" cy="20" r="1.2" fill="#FFF6E5"/><circle cx="41" cy="20" r="1.2" fill="#FFF6E5"/>
+            <path d="M33 24 q5.5 4 11 0" fill="#E9E6EE"/><circle cx="45" cy="23" r="1.2" fill="#1A1530"/>
+          </symbol>
+          <!-- player forms -->
+          <symbol id="m-stump" viewBox="0 0 48 48">
+            <path d="M6 40 q-4 4 -4 6 h10z M42 40 q4 4 4 6 h-10z" fill="#5A2A1A"/>
+            <path d="M8 20 V40 Q24 48 40 40 V20Z" fill="#7A3B26" stroke="#1A1530" stroke-width="2"/>
+            <path d="M14 26 v14 M22 27 v16 M30 27 v15 M36 25 v13" stroke="#4A2214" stroke-width="1.6" opacity=".7"/>
+            <ellipse cx="24" cy="20" rx="16" ry="6" fill="#EBC98F" stroke="#1A1530" stroke-width="2"/>
+            <ellipse cx="24" cy="20" rx="10.5" ry="3.8" fill="none" stroke="#C9955A" stroke-width="1.4"/>
+            <ellipse cx="24" cy="20" rx="5" ry="1.8" fill="none" stroke="#C9955A" stroke-width="1.4"/>
+            <path d="M34 12 q4 -6 8 -4 q-2 4 -8 4z" fill="#3FA35B"/><path d="M34 12 v6" stroke="#2F7A46" stroke-width="1.5"/>
+          </symbol>
+          <symbol id="m-ball" viewBox="0 0 48 48">
+            <ellipse cx="24" cy="45" rx="13" ry="2.6" fill="#1A1530" opacity=".25"/>
+            <circle cx="24" cy="24" r="18" fill="#FFF6E5" stroke="#1A1530" stroke-width="2.5"/>
+            <path d="M24 6 C14 14 12 26 18 40 A18 18 0 0 1 8 15 C12 9 18 6 24 6Z" fill="#FDC700"/>
+            <path d="M42 24 C34 18 24 18 12 22 A18 18 0 0 1 40 14 C41 17 42 20 42 24Z" fill="#003C6C"/>
+            <path d="M24 6 C14 14 12 26 18 40 M42 24 C34 18 24 18 12 22 M30 41 C33 32 31 24 24 18" stroke="#1A1530" stroke-width="2" fill="none"/>
+            <circle cx="24" cy="24" r="18" fill="none" stroke="#1A1530" stroke-width="2.5"/>
+          </symbol>
+          <symbol id="shroom" viewBox="0 0 44 44">
+            <path d="M16 24 h12 v14 q-6 4 -12 0 z" fill="#FFF6E5"/>
+            <path d="M2 26 C2 8 42 8 42 26 Z" fill="#E8553E"/>
+            <circle cx="13" cy="18" r="3" fill="#FFF6E5"/><circle cx="25" cy="14" r="2.4" fill="#FFF6E5"/><circle cx="33" cy="21" r="2.6" fill="#FFF6E5"/>
+          </symbol>
+          <symbol id="tree" viewBox="0 0 30 60"><path d="M15 0 L24 18 H20 L28 34 H22 L30 50 H18 V60 H12 V50 H0 L8 34 H2 L10 18 H6Z"/></symbol>
+          <pattern id="grass" width="22" height="18" patternUnits="userSpaceOnUse"><path d="M4 14 l2 -6 l2 6 M14 6 l2 -5 l2 5" stroke="#6E9A48" stroke-width="1.4" fill="none"/></pattern>
+          <pattern id="sandp" width="14" height="14" patternUnits="userSpaceOnUse"><circle cx="3" cy="4" r="1" fill="#C9A86E" opacity=".6"/><circle cx="10" cy="10" r=".9" fill="#C9A86E" opacity=".5"/></pattern>
+        </defs>
+
+        <!-- ground zones -->
+        <rect width="600" height="1000" fill="#1F5A3A"/>
+        <path d="M0 372 Q150 390 300 378 T600 384 V1000 H0Z" fill="#7FA857"/>
+        <path d="M0 372 Q150 390 300 378 T600 384 V1000 H0Z" fill="url(#grass)"/>
+        <path d="M0 690 Q150 676 300 688 T600 682 V1000 H0Z" fill="#E8CFA0"/>
+        <path d="M0 772 Q150 784 300 774 T600 778 V1000 H0Z" fill="#F3DDB0"/>
+        <path d="M0 772 Q150 784 300 774 T600 778 V1000 H0Z" fill="url(#sandp)"/>
+        <path d="M0 910 Q37 898 75 910 T150 910 T225 910 T300 910 T375 910 T450 910 T525 910 T600 910 V1000 H0Z" fill="#16A3A8"/>
+        <path d="M0 910 Q37 898 75 910 T150 910 T225 910 T300 910 T375 910 T450 910 T525 910 T600 910" stroke="#E9FBF7" stroke-width="5" fill="none"/>
+        <path d="M0 950 Q50 940 100 950 T200 950 T300 950 T400 950 T500 950 T600 950" stroke="#E9FBF7" stroke-width="2.5" fill="none" opacity=".5"/>
+
+        <!-- forest -->
+        <g fill="#14301F">
+          <use href="#tree" x="20" y="20" width="26" height="52"/><use href="#tree" x="60" y="40" width="22" height="44"/><use href="#tree" x="470" y="22" width="30" height="60"/>
+          <use href="#tree" x="540" y="40" width="26" height="52"/><use href="#tree" x="555" y="150" width="30" height="60"/><use href="#tree" x="510" y="290" width="26" height="52"/>
+          <use href="#tree" x="565" y="300" width="22" height="44"/><use href="#tree" x="240" y="140" width="26" height="52"/><use href="#tree" x="290" y="300" width="22" height="44"/>
+          <use href="#tree" x="10" y="300" width="26" height="52"/><use href="#tree" x="330" y="160" width="22" height="44"/><use href="#tree" x="420" y="300" width="24" height="48"/>
+        </g>
+        <use href="#shroom" x="210" y="330" width="22" height="22"/><use href="#shroom" x="470" y="250" width="18" height="18"/><use href="#shroom" x="80" y="345" width="18" height="18"/>
+
+        <!-- Stevenson -->
+        <g stroke="#1A1530" stroke-width="1.5">
+          <rect x="246" y="40" width="34" height="22" fill="#E9E1CF"/><rect x="284" y="34" width="40" height="28" fill="#F3EBDA"/><rect x="328" y="40" width="30" height="22" fill="#E9E1CF"/>
+        </g>
+        <g fill="#7FB3D9"><rect x="252" y="47" width="7" height="5"/><rect x="266" y="47" width="7" height="5"/><rect x="291" y="42" width="7" height="5"/><rect x="309" y="42" width="7" height="5"/><rect x="334" y="47" width="7" height="5"/><rect x="345" y="47" width="7" height="5"/></g>
+
+        <!-- big slug + sign -->
+        <g class="critter"><title>Banana slug, taking the long way down</title>
+          <g transform="translate(14 96) scale(1.05)">
+            <ellipse cx="88" cy="150" rx="70" ry="7" fill="#14301F" opacity=".6"/>
+            <path d="M20 148 C40 148 52 132 78 128 C104 124 120 116 128 100 C135 86 154 85 158 104 C162 124 146 140 118 146 C92 152 52 156 20 148 Z" fill="#FDC700" stroke="#1A1530" stroke-width="2.5"/>
+            <path d="M34 146 C60 144 80 138 104 136" stroke="#E0A800" stroke-width="3" fill="none" stroke-linecap="round"/>
+            <g fill="#8A6A00" opacity=".55"><ellipse cx="72" cy="140" rx="5" ry="3"/><ellipse cx="96" cy="134" rx="4" ry="2.4"/><ellipse cx="52" cy="145" rx="3.5" ry="2"/></g>
+            <path d="M140 90 l-5 -26 M151 92 l9 -25" stroke="#FDC700" stroke-width="5" stroke-linecap="round"/>
+            <circle cx="134" cy="62" r="7" fill="#FFF6E5" stroke="#1A1530" stroke-width="2"/><circle cx="136" cy="63" r="3.4" fill="#1A1530"/>
+            <circle cx="161" cy="65" r="7" fill="#FFF6E5" stroke="#1A1530" stroke-width="2"/><circle cx="163" cy="66" r="3.4" fill="#1A1530"/>
+            <path d="M146 112 q7 6 14 -1" stroke="#1A1530" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          </g>
+        </g>
+        <g transform="translate(46 120)"><path d="M0 -20 L20 0 L0 20 L-20 0Z" fill="#FDC700" stroke="#1A1530" stroke-width="2.5"/><path d="M0 20 v26" stroke="#4A2214" stroke-width="3"/>
+          <text y="-2" text-anchor="middle" font-family="Bungee, Arial Black, sans-serif" font-size="6.5" fill="#1A1530">SLUG</text><text y="6" text-anchor="middle" font-family="Bungee, Arial Black, sans-serif" font-size="6.5" fill="#1A1530">XING</text></g>
+        <g class="critter"><title>Squirrel guarding its acorn</title><use href="#squirrel" x="548" y="236" width="34" height="34"/></g>
+        <g class="critter"><title>Raccoon on a late-night snack run</title><use href="#raccoon" x="30" y="248" width="44" height="38"/></g>
+
+        <!-- meadow -->
+        <g fill="#5E8A3E"><ellipse cx="80" cy="470" rx="44" ry="11"/><ellipse cx="520" cy="610" rx="48" ry="12"/><ellipse cx="320" cy="660" rx="34" ry="9"/></g>
+        <g><circle cx="110" cy="560" r="3" fill="#FFF6E5"/><circle cx="118" cy="566" r="3" fill="#FFE27A"/><circle cx="530" cy="430" r="3" fill="#FF5FA2"/><circle cx="540" cy="438" r="3" fill="#FFF6E5"/><circle cx="60" cy="640" r="3" fill="#FFE27A"/></g>
+        <g class="critter"><title>Wild turkeys. They will not move for you</title><use href="#turkey" x="20" y="480" width="40" height="38"/><use href="#turkey" x="62" y="494" width="32" height="30"/></g>
+        <g class="critter"><title>Coyote on the night shift</title><use href="#coyote" x="520" y="520" width="52" height="44"/></g>
+
+        <!-- downtown -->
+        <g stroke="#1A1530" stroke-width="1.2"><rect x="20" y="712" width="40" height="30" rx="3" fill="#C9A86E"/><rect x="66" y="720" width="30" height="22" rx="3" fill="#E59A7A"/><rect x="510" y="708" width="46" height="34" rx="3" fill="#C9A86E"/><rect x="560" y="718" width="30" height="24" rx="3" fill="#8FB8C9"/></g>
+        <g fill="#FFF6E5" opacity=".9"><rect x="26" y="718" width="8" height="6"/><rect x="44" y="718" width="8" height="6"/><rect x="516" y="714" width="8" height="6"/><rect x="532" y="714" width="8" height="6"/></g>
+
+        <!-- beach: boardwalk coaster, umbrella, volleyball net -->
+        <g stroke="#D7263D" stroke-width="3.2" fill="none"><path d="M20 880 C40 820 60 800 85 800 C110 800 115 850 140 850 C158 850 165 820 200 820"/></g>
+        <g stroke="#D7263D" stroke-width="1.6"><path d="M34 880 V846 M50 880 V818 M66 880 V804 M85 880 V800 M104 880 V812 M122 880 V842 M140 880 V850 M160 880 V838 M180 880 V824 M198 880 V820"/></g>
+        <g transform="translate(250 812)"><path d="M0 0 v52" stroke="#4A2214" stroke-width="2.4"/><path d="M-28 6 Q0 -18 28 6Z" fill="#FF5FA2" stroke="#1A1530" stroke-width="1.6"/><path d="M-14 6 Q0 -16 0 -9 Q0 -16 14 6" fill="#FFF6E5" opacity=".8"/></g>
+        <rect x="226" y="866" width="40" height="14" rx="3" fill="#16A3A8" transform="rotate(-6 246 873)"/>
+        <g transform="translate(490 800)">
+          <path d="M0 0 V84 M100 0 V84" stroke="#4A2214" stroke-width="3.5"/>
+          <rect x="0" y="4" width="100" height="26" fill="none" stroke="#FFF6E5" stroke-width="1.2"/>
+          <path d="M0 11 H100 M0 18 H100 M0 25 H100 M10 4 V30 M20 4 V30 M30 4 V30 M40 4 V30 M50 4 V30 M60 4 V30 M70 4 V30 M80 4 V30 M90 4 V30" stroke="#FFF6E5" stroke-width=".8" opacity=".85"/>
+          <rect x="0" y="2" width="100" height="4" fill="#FFF6E5"/>
+        </g>
+
+        <!-- stage dividers -->
+        <g font-family="Bungee, Arial Black, sans-serif" font-size="11">
+          <path d="M0 380 H600" stroke="#FFF6E5" stroke-width="2" stroke-dasharray="6 8" opacity=".5"/>
+          <g transform="translate(596 372)"><rect x="-176" y="-14" width="176" height="24" rx="12" fill="#1A1530"/><text x="-88" y="2.5" text-anchor="middle" fill="#FDC700" id="divA">CRITTER ZONE</text></g>
+          <path d="M0 776 H600" stroke="#1A1530" stroke-width="2" stroke-dasharray="6 8" opacity=".35"/>
+          <g transform="translate(4 768)"><rect x="0" y="-14" width="196" height="24" rx="12" fill="#1A1530"/><text x="98" y="2.5" text-anchor="middle" fill="#FDC700" id="divB">VOLLEYBALL BEACH</text></g>
+        </g>
+
+        <path id="trail" d="M300 78 C470 95 520 210 390 255 S100 300 160 400 S500 470 430 565 S90 610 165 700 S480 735 400 800 S300 860 470 862" stroke="#FFF6E5" stroke-width="8" stroke-linecap="round" stroke-dasharray="2 15" fill="none"/>
+
+        <g font-family="Bungee, Arial Black, sans-serif" font-size="16" fill="#FFF6E5">
+          <text x="300" y="24" text-anchor="middle">STEVENSON</text>
+          <text x="20" y="430" fill="#1A1530" font-size="14">GREAT MEADOW</text>
+          <text x="20" y="706" fill="#1A1530" font-size="12" opacity=".75">DOWNTOWN</text>
+          <text x="110" y="898" text-anchor="middle" fill="#D7263D" font-size="13">BOARDWALK</text>
+          <text x="540" y="902" text-anchor="middle" fill="#1A1530" font-size="10">THE NET</text>
+          <text x="20" y="980" fill="#E9FBF7">MONTEREY BAY</text>
+        </g>
+        <g id="ticks"></g>
+        <g id="markers"></g>
+      </svg>
+    </div>
+    <div class="dash-copy">
+      <h2 class="roadsign" id="dashTitle"><small>NEXT EXIT: THE BEACH</small>Downhill Dash</h2>
+      <p>Everyone starts as a <b>stump</b> up in the redwoods. Every clue moves you down the trail, and the deeper you get, the more you evolve.</p>
+      <ol class="stages" id="stages"></ol>
+      <h3 class="legend-title">Top 10 on the trail</h3>
+      <p class="legend-note">Numbered pins are the top 10. Everyone else is on the map too. Hover or tap any icon to see who it is.</p>
+      <ol class="legend" id="legend"></ol>
+    </div>
+  </section>
+
+  <section aria-labelledby="podTitle">
+    <div class="pod-head"><h2 class="sign" id="podTitle">Top of the <span class="hl">Stumps</span></h2></div>
+    <div class="podium" id="podium"></div>
+  </section>
+
+  <section class="cabinet" aria-labelledby="hsTitle">
+    <h2 class="cab-top" id="hsTitle">HIGH SCORES</h2>
+    <div class="screen">
+      <p class="hot" id="hot"></p>
+      <div class="entry"><label for="q">ENTER NAME&gt;</label><input id="q" type="search" placeholder="_ _ _" autocomplete="off"></div>
+      <div class="scores" id="scores"></div>
+      <button class="start" id="moreBtn" type="button" hidden>PRESS START TO SEE ALL</button>
+    </div>
+    <div class="controls" aria-hidden="true"><span></span><span></span><span></span></div>
+  </section>
+
+  <section aria-labelledby="tixTitle">
+    <div class="booth-head">
+      <h2 class="booth-sign" id="tixTitle">Prize Tickets</h2>
+      <p>Every new find prints a ticket. Newest first; swipe for more.</p>
+    </div>
+    <div class="tickets" id="tickets"></div>
+  </section>
+
+  <section class="strength" id="housePanel" aria-labelledby="strTitle">
+    <h2 id="strTitle">Test Your Strength<small>HOUSE VS HOUSE · RING THE BELL</small></h2>
+    <div class="towers" id="towers"></div>
+  </section>
+</div>
+
+<section class="beach" aria-labelledby="beachTitle">
+  <div class="beach-head">
+    <h2 class="surfboard" id="beachTitle">Beachcombing</h2>
+    <p>Every clue is a shell on the beach. The number is how many slugs found it. Red X's are clues still buried somewhere.</p>
+  </div>
+  <div class="shells" id="shells"></div>
+  <p class="foot">Each clue counts once per resident. Ties go to whoever got there first. The board refreshes on its own every few minutes.</p>
+</section>
+
+<script>
+/* ============ EDIT THIS ============ */
+const CONFIG = {
+  subtitle: "Stevenson College · Fall Quarter 2026",
+  // Google Sheet → File → Share → Publish to web → pick the PUBLIC tab → CSV → copy link.
+  sheetCsvUrl: "",
+  totalClues: 20,
+  endsOn: "2026-12-11",
+  refreshMinutes: 5,
+  streakHours: 24,                // "on fire" = most clues found within this many hours…
+  streakMin: 3,                   // …as long as it's at least this many
+  // Words to look for in each column header (case-insensitive). Matches the "CWST Campus Challenge" form.
+  // There is no name question yet, so the board shows the part of the email before the @.
+  columns: { timestamp: "timestamp", email: "email", name: "name", clue: "which challenge", house: "house", approved: "approved" },
+  requireApproval: false,
+  initialRows: 20,
+  // When a slug "evolves" on the map: stump → campus critter → volleyball
+  evolve: { critter: 7, volleyball: 15 },
+  mapMarkers: 10,
+  mapCrowd: 150,                  // everyone else shows as a small icon on the map (up to this many)
+  tickets: 12
+};
+/* =================================== */
+
+const $ = id => document.getElementById(id);
+let state = { players: [], showAll: false, demo: false, hot: null };
+
+function parseCSV(text){
+  const rows = []; let row = [], f = "", q = false;
+  for (let i = 0; i < text.length; i++){
+    const c = text[i];
+    if (q){ if (c === '"'){ if (text[i+1] === '"'){ f += '"'; i++; } else q = false; } else f += c; }
+    else if (c === '"') q = true;
+    else if (c === ','){ row.push(f); f = ""; }
+    else if (c === '\n' || c === '\r'){ if (c === '\r' && text[i+1] === '\n') i++; row.push(f); rows.push(row); row = []; f = ""; }
+    else f += c;
+  }
+  if (f !== "" || row.length){ row.push(f); rows.push(row); }
+  return rows.filter(r => r.some(v => v.trim() !== ""));
+}
+function parseTime(s){
+  const m = String(s).trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+  if (m) return new Date(+m[3], m[1]-1, +m[2], +m[4], +m[5], +(m[6]||0));
+  const d = new Date(s); return isNaN(d) ? null : d;
+}
+const YES = /^(y|yes|true|1|approved|✓|✔)$/i, NO = /^(n|no|false|0|rejected?|denied)$/i;
+
+function compute(rows){
+  const headers = rows[0].map(h => h.toLowerCase());
+  const col = {};
+  for (const [k, word] of Object.entries(CONFIG.columns))
+    col[k] = headers.findIndex(h => h.includes(word) && !(k === "name" && h.includes("email")));
+  if (col.name < 0 && col.email < 0) throw new Error("Couldn't find a Name or Email column in the sheet.");
+  if (col.clue < 0) throw new Error("Couldn't find a Clue column in the sheet.");
+  const subs = rows.slice(1).map(r => ({
+    t: col.timestamp >= 0 ? parseTime(r[col.timestamp]) : null,
+    email: col.email >= 0 ? (r[col.email]||"").trim().toLowerCase() : "",
+    name: col.name >= 0 ? (r[col.name]||"").trim().replace(/\s+/g," ") : "",
+    clue: (r[col.clue]||"").trim(),
+    house: col.house >= 0 ? (r[col.house]||"").trim() : "",
+    ok: col.approved < 0 ? true : (CONFIG.requireApproval ? YES.test((r[col.approved]||"").trim()) : !NO.test((r[col.approved]||"").trim()))
+  })).filter(s => s.ok && s.clue && (s.email || s.name));
+  subs.sort((a,b) => (a.t||0) - (b.t||0));
+  const players = new Map(), clueFinders = new Map(), feed = [];
+  let serial = 0;
+  for (const s of subs){
+    const key = s.email || s.name.toLowerCase();
+    if (!players.has(key)) players.set(key, { name: s.name || s.email.split("@")[0], house: s.house, clues: new Set(), last: null, times: [] });
+    const p = players.get(key);
+    if (s.name) p.name = s.name;
+    if (s.house) p.house = s.house;
+    if (p.clues.has(s.clue)) continue;
+    p.clues.add(s.clue); p.last = s.t; if (s.t) p.times.push(s.t);
+    clueFinders.set(s.clue, (clueFinders.get(s.clue)||0) + 1);
+    feed.push({ no: ++serial, name: p.name, clue: s.clue, t: s.t, n: p.clues.size });
+  }
+  const list = [...players.values()].sort((a,b) => b.clues.size - a.clues.size || (a.last||0) - (b.last||0) || a.name.localeCompare(b.name));
+  list.forEach((p,i) => p.rank = i + 1);
+  return { list, clueFinders, feed: feed.slice(-CONFIG.tickets).reverse(), hasHouse: col.house >= 0 };
+}
+
+function ago(d){
+  if (!d) return "";
+  const m = Math.round((Date.now() - d) / 60000);
+  if (m < 1) return "just now"; if (m < 60) return m + "m ago";
+  const h = Math.round(m/60); if (h < 24) return h + "h ago";
+  const dd = Math.round(h/24); return dd === 1 ? "yesterday" : dd + "d ago";
+}
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const total = () => Math.max(CONFIG.totalClues, 1);
+const stripNum = c => c.replace(/^#?\d+\s*[-–—.:]?\s*/, "");
+const ord = n => n + (["th","st","nd","rd"][(n % 100 - 20) % 10] || ["th","st","nd","rd"][n % 100] || "th");
+const pad = (n, w) => String(n).padStart(w, "0");
+const badgeClass = r => r === 1 ? "g" : r === 2 ? "o" : r === 3 ? "t" : "";
+
+const slugPuck = `<svg viewBox="0 -4 130 66" aria-hidden="true"><path d="M4 56C18 56 28 46 48 43s38-8 46-18c6-8 22-8 24 6s-8 24-30 28S18 62 4 56z" fill="#FDC700" stroke="#1A1530" stroke-width="4"/><path d="M98 22l-4-15M109 23l7-14" stroke="#FDC700" stroke-width="5" stroke-linecap="round"/><circle cx="94" cy="6" r="5" fill="#FFF6E5" stroke="#1A1530" stroke-width="2"/><circle cx="116" cy="8" r="5" fill="#FFF6E5" stroke="#1A1530" stroke-width="2"/></svg>`;
+const bellSVG = lead => `<svg class="bell" viewBox="0 0 40 36" aria-hidden="true"><path d="M8 28 C8 10 14 4 20 4 C26 4 32 10 32 28 Z" fill="${lead ? "#FDC700" : "#8E87B8"}" stroke="#1A1530" stroke-width="3"/><rect x="4" y="27" width="32" height="6" rx="3" fill="${lead ? "#FDC700" : "#8E87B8"}" stroke="#1A1530" stroke-width="3"/></svg>`;
+const shellColors = ["#FF8A3D","#FFE27A","#FF5FA2","#E9FBF7","#16A3A8","#F7B6A0"];
+
+function drawCoaster(){
+  const g = $("coaster"), ns = "http://www.w3.org/2000/svg";
+  const track = document.createElementNS(ns, "path");
+  track.setAttribute("d", "M-20 470 C40 470 70 250 150 250 C230 250 240 400 300 400 C350 400 360 320 420 320 C480 320 490 430 540 450");
+  track.setAttribute("stroke-width", "6"); g.appendChild(track);
+  const L = track.getTotalLength();
+  for (let s = 0; s < L; s += 16){
+    const p = track.getPointAtLength(s);
+    const ln = document.createElementNS(ns, "path");
+    ln.setAttribute("d", `M${p.x} ${p.y} V520`); ln.setAttribute("stroke-width", "2"); ln.setAttribute("opacity", ".75"); g.appendChild(ln);
+    if (Math.round(s / 16) % 2 === 0){
+      const q = track.getPointAtLength(Math.min(s + 16, L));
+      const x = document.createElementNS(ns, "path");
+      x.setAttribute("d", `M${p.x} ${p.y + 20} L${q.x} 520`); x.setAttribute("stroke-width", "1.5"); x.setAttribute("opacity", ".55"); g.appendChild(x);
+    }
+  }
+}
+
+const ANIMALS = [
+  { id: "deer", name: "Deer", w: 50, h: 44 },
+  { id: "turkey", name: "Turkey", w: 46, h: 44 },
+  { id: "squirrel", name: "Squirrel", w: 44, h: 44 },
+  { id: "rabbit", name: "Bunny", w: 44, h: 44 },
+  { id: "coyote", name: "Coyote", w: 52, h: 44 },
+  { id: "raccoon", name: "Raccoon", w: 50, h: 44 }
+];
+function hashName(s){ let h = 2166136261; for (const c of s) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return Math.abs(h); }
+function thresholds(){
+  const T = total();
+  const c = Math.min(Math.max(CONFIG.evolve.critter, 1), T - 1);
+  const v = Math.min(Math.max(CONFIG.evolve.volleyball, c + 1), T);
+  return { c, v, T };
+}
+function formOf(p){
+  const { c, v } = thresholds(), n = p.clues.size;
+  if (n >= v) return { stage: "ball", label: "Volleyball", sym: "m-ball", w: 48, h: 48 };
+  if (n >= c) { const a = ANIMALS[hashName(p.name) % ANIMALS.length]; return { stage: "critter", label: a.name, sym: a.id, w: a.w, h: a.h }; }
+  return { stage: "stump", label: "Stump", sym: "m-stump", w: 48, h: 48 };
+}
+function formIcon(f){ return `<svg viewBox="0 0 ${f.w} ${f.h}" aria-hidden="true"><use href="#${f.sym}"/></svg>`; }
+
+function drawMap(list){
+  const trail = $("trail"), L = trail.getTotalLength();
+  // Find where the trail crosses each zone line so stage changes land exactly on the map's zone borders.
+  const crossAt = y => { let lo = 0, hi = L; for (let i = 0; i < 40; i++){ const mid = (lo + hi) / 2; if (trail.getPointAtLength(mid).y < y) lo = mid; else hi = mid; } return lo; };
+  const L1 = crossAt(380), L2 = crossAt(776);
+  const { c, v, T } = thresholds();
+  const lenFor = n => n <= c ? n / c * L1 : n <= v ? L1 + (n - c) / (v - c) * (L2 - L1) : L2 + (n - v) / Math.max(T - v, 1) * (L - L2) * .97;
+  const at = len => trail.getPointAtLength(Math.max(0, Math.min(L, len)));
+
+  $("divA").textContent = `CRITTER ZONE · ${c}+ CLUES`;
+  $("divB").textContent = `VOLLEYBALL BEACH · ${v}+`;
+
+  let ticks = "";
+  const step = T > 12 ? 5 : 1;
+  for (let k = step; k <= T; k += step){
+    if (k === c || k === v) continue;
+    const p = at(lenFor(k));
+    ticks += `<g transform="translate(${p.x.toFixed(1)} ${p.y.toFixed(1)})"><path d="M0 0 V-26" stroke="#1A1530" stroke-width="2.5"/><path d="M0 -26 h22 l-6 7 l6 7 h-22z" fill="#FFF6E5" stroke="#1A1530" stroke-width="2"/><text x="4" y="-15" font-family="Bungee, Arial Black, sans-serif" font-size="10" fill="#1A1530">${k}</text></g>`;
+  }
+  $("ticks").innerHTML = ticks;
+
+  const top = list.slice(0, CONFIG.mapMarkers);
+  const zone = { stump: [8, L1 - 8], critter: [L1 + 14, L2 - 14], ball: [L2 + 16, L - 4] };
+  const place = (len, perp, stage) => {
+    const [lo, hi] = zone[stage]; len = Math.max(lo, Math.min(hi, len));
+    const a = at(len), b = at(len + 6);
+    let nx = -(b.y - a.y), ny = b.x - a.x; const d = Math.hypot(nx, ny) || 1; nx /= d; ny /= d;
+    const yb = { stump: [70, 366], critter: [410, 760], ball: [808, 892] }[stage];
+    return { x: Math.max(18, Math.min(582, a.x + nx * perp)), y: Math.max(yb[0], Math.min(yb[1], a.y + ny * perp)) };
+  };
+  const colors = { g:"#FDC700", o:"#FF8A3D", t:"#16A3A8", "":"#FFF6E5" };
+
+  // The rest of the field: small icons in their zone, so every stage is visible.
+  let crowd = "";
+  list.slice(CONFIG.mapMarkers, CONFIG.mapMarkers + CONFIG.mapCrowd).forEach(p => {
+    const f = formOf(p), h = hashName(p.name + "#");
+    const along = ((h % 1000) / 1000 - .5) * 60, side = (h >> 10) % 2 ? 1 : -1, dist = 26 + ((h >> 11) % 60);
+    const q = place(lenFor(p.clues.size) + along, side * dist, f.stage);
+    const sz = 24, hgt = sz * f.h / f.w;
+    crowd += `<g class="pin small"><title>#${p.rank} ${esc(p.name)}: ${p.clues.size} clues (${f.label})</title><use href="#${f.sym}" x="${(q.x - sz / 2).toFixed(1)}" y="${(q.y - hgt).toFixed(1)}" width="${sz}" height="${hgt.toFixed(1)}"/></g>`;
+  });
+
+  const groups = new Map();
+  top.forEach(p => { const k = p.clues.size; groups.set(k, (groups.get(k) || []).concat(p)); });
+  let out = crowd;
+  [...top].reverse().forEach(p => {
+    const grp = groups.get(p.clues.size), idx = grp.indexOf(p), f = formOf(p);
+    const k = Math.floor(idx / 2), along = k === 0 ? 0 : (k % 2 ? -1 : 1) * Math.ceil(k / 2) * 52;
+    const perp = grp.length === 1 ? 0 : 30 * (idx % 2 ? 1 : -1);
+    const { x, y } = place(lenFor(p.clues.size) + along, perp, f.stage);
+    const sz = f.stage === "critter" ? 46 : 42, hgt = sz * f.h / f.w;
+    const crown = p.rank === 1 ? `<path d="M-12 ${-hgt - 6} l4 -12 l8 8 l8 -10 l8 10 l8 -8 l4 12z" transform="translate(-4 0)" fill="#FDC700" stroke="#1A1530" stroke-width="2" stroke-linejoin="round"/>` : "";
+    out += `<g class="pin" transform="translate(${x.toFixed(1)} ${y.toFixed(1)})"><title>#${p.rank} ${esc(p.name)}: ${p.clues.size} clues (${f.label})</title>
+      <ellipse cy="2" rx="${sz * .42}" ry="4" fill="#1A1530" opacity=".25"/>
+      <use href="#${f.sym}" x="${-sz / 2}" y="${-hgt + 2}" width="${sz}" height="${hgt}"/>${crown}
+      <g transform="translate(${sz / 2 - 2} ${-hgt + 4})"><circle r="11" fill="${colors[badgeClass(p.rank)]}" stroke="#1A1530" stroke-width="2.5"/><text y="4" text-anchor="middle" font-family="Bungee, Arial Black, sans-serif" font-size="11" fill="#1A1530">${p.rank}</text></g></g>`;
+  });
+  $("markers").innerHTML = out;
+
+  const count = { stump: 0, critter: 0, ball: 0 };
+  list.forEach(p => count[formOf(p).stage]++);
+  const here = n => `${n} ${n === 1 ? "slug" : "slugs"} here`;
+  $("stages").innerHTML = [
+    { sym: { sym: "m-stump", w: 48, h: 48 }, name: "Stump", where: "The redwoods", range: `0–${c - 1} clues`, n: count.stump },
+    { sym: { sym: "deer", w: 50, h: 44 }, name: "Campus critter", where: "The Great Meadow", range: `${c}–${v - 1} clues`, n: count.critter },
+    { sym: { sym: "m-ball", w: 48, h: 48 }, name: "Volleyball", where: "The beach", range: `${v}–${T} clues`, n: count.ball }
+  ].map(s => `<li>${formIcon(s.sym)}<span><b>${s.name}</b><small>${s.where} · ${here(s.n)}</small></span><span class="rg">${s.range}</span></li>`).join("");
+
+  $("legend").innerHTML = top.map(p => { const f = formOf(p);
+    return `<li><span class="badge ${badgeClass(p.rank)}">${p.rank}</span><span class="form" title="${f.label}">${formIcon(f)}</span><span style="min-width:0"><b>${esc(p.name)}</b><small>${f.label}${p.house ? " · " + esc(p.house) : ""} · ${ago(p.last)}</small></span><span class="n">${p.clues.size}/${T}</span></li>`;
+  }).join("") || `<li>No slugs on the trail yet.</li>`;
+}
+
+function podiumSlug(crown){
+  const c = crown ? '<path d="M96 6 L100 -6 L106 4 L112 -8 L116 4 L122 -6 L124 8 Z" fill="#FDC700" stroke="#1A1530" stroke-width="2" stroke-linejoin="round"/>' : "";
+  return `<svg viewBox="0 -12 130 72" aria-hidden="true">${c}
+    <path d="M4 56C18 56 28 46 48 43s38-8 46-18c6-8 22-8 24 6s-8 24-30 28S18 62 4 56z" fill="#FDC700" stroke="#1A1530" stroke-width="2.5"/>
+    <g fill="#8A6A00" opacity=".5"><ellipse cx="44" cy="52" rx="4" ry="2.4"/><ellipse cx="64" cy="46" rx="3" ry="2"/><ellipse cx="26" cy="55" rx="3" ry="1.8"/></g>
+    <path d="M98 22l-4-15M109 23l7-14" stroke="#FDC700" stroke-width="4.5" stroke-linecap="round"/>
+    <circle cx="94" cy="6" r="5" fill="#FFF6E5" stroke="#1A1530" stroke-width="1.5"/><circle cx="95.5" cy="7" r="2.5" fill="#1A1530"/>
+    <circle cx="116" cy="8" r="5" fill="#FFF6E5" stroke="#1A1530" stroke-width="1.5"/><circle cx="117.5" cy="9" r="2.5" fill="#1A1530"/>
+    <path d="M104 38q6 5 11-1" stroke="#1A1530" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>`;
+}
+function drawPodium(list){
+  const cls = ["s1","s2","s3"], place = ["1st","2nd","3rd"];
+  $("podium").innerHTML = list.slice(0,3).map((p,i) => `<div class="stand ${cls[i]}">${podiumSlug(i === 0)}<div class="stump"><span class="pl">${place[i]}</span><span class="nm">${esc(p.name)}</span><small>${p.clues.size} clues${p.house ? " · " + esc(p.house) : ""}</small></div></div>`).join("")
+    || `<p class="pod-empty">The stumps are empty. First three slugs to find a clue take them.</p>`;
+}
+
+function render({ list, clueFinders, feed, hasHouse }){
+  state.players = list;
+  $("sPlayers").textContent = pad(list.length, 3);
+  $("sFinds").textContent = pad(list.reduce((s,p) => s + p.clues.size, 0), 4);
+  const end = new Date(CONFIG.endsOn + "T23:59:59"), days = Math.max(Math.ceil((end - Date.now()) / 864e5), 0);
+  $("sDays").textContent = pad(days, 2);
+
+  const since = Date.now() - CONFIG.streakHours * 36e5;
+  let hot = null, hotN = 0;
+  for (const p of list){ const n = p.times.filter(t => t >= since).length; if (n > hotN || (n === hotN && hot && p.last > hot.last)){ hot = p; hotN = n; } }
+  const win = CONFIG.streakHours === 24 ? "TODAY" : "IN " + CONFIG.streakHours + "H";
+  state.hot = hot && hotN >= CONFIG.streakMin ? hot : null;
+  if (state.hot){
+    $("sStreak").textContent = `${hot.name.toUpperCase()} ×${hotN}`;
+    $("hot").innerHTML = `HOT STREAK! <b>${esc(hot.name.toUpperCase())}</b> FOUND ${hotN} CLUES ${win}`;
+  } else {
+    $("sStreak").textContent = "NOBODY YET";
+    $("hot").textContent = `NOBODY'S ON FIRE YET. FIND ${CONFIG.streakMin} CLUES ${win} TO LIGHT IT UP`;
+  }
+
+  drawMap(list);
+  drawPodium(list);
+  renderScores();
+
+  $("tickets").innerHTML = feed.map(f => `<div class="ticket"><span class="adm"><span>ADMIT ONE</span><span>No. ${pad(f.no, 4)}</span></span><b>${esc(f.name)}</b><span class="what">found ${esc(stripNum(f.clue))}</span><span class="when">${ago(f.t)} · clue #${f.n} for them</span></div>`).join("")
+    || `<div class="ticket"><span class="adm"><span>ADMIT ONE</span><span>No. 0000</span></span><b>No finds yet</b><span class="what">The first ticket is waiting for you.</span></div>`;
+
+  $("housePanel").hidden = !hasHouse;
+  if (hasHouse){
+    const hm = new Map();
+    for (const p of list){ const h = p.house || "No house"; const o = hm.get(h) || { n:0, f:0 }; o.n++; o.f += p.clues.size; hm.set(h, o); }
+    const hs = [...hm.entries()].sort((a,b) => a[0].localeCompare(b[0], undefined, { numeric:true }));
+    const max = Math.max(...hs.map(h => h[1].f), 1);
+    $("towers").innerHTML = hs.map(([h,o]) => {
+      const lead = o.f === max, pct = Math.max(o.f / max, .04) * 100;
+      return `<div class="tower"><div class="pole">${lead ? `<span class="ding">DING!</span>` : ""}${bellSVG(lead)}<span class="puck" style="bottom:${pct}%">${slugPuck}</span></div><div class="base"><b>${esc(h)}</b><span>${o.f} clues · ${o.n} slugs</span></div></div>`;
+    }).join("");
+  }
+
+  const names = [...clueFinders.keys()].sort((a,b) => a.localeCompare(b, undefined, { numeric:true }));
+  const minC = Math.min(...clueFinders.values());
+  const missing = Math.max(CONFIG.totalClues - names.length, 0);
+  $("shells").innerHTML = names.map((c,i) => { const n = clueFinders.get(c), tough = n === minC && names.length > 1;
+      return `<div class="shell"><svg viewBox="0 0 80 70" style="color:${shellColors[i % shellColors.length]}" aria-hidden="true"><use href="#shell"/></svg><b>${esc(c)}</b><span>${n} ${n===1?"slug":"slugs"} found it</span>${tough ? `<span class="tough">TOUGHEST</span>` : ""}</div>`; }).join("")
+    + Array.from({ length: missing }, () => `<div class="shell buried"><svg viewBox="0 0 80 70" aria-hidden="true"><use href="#dig"/></svg><b>???</b><span>still buried</span></div>`).join("");
+}
+
+function renderScores(){
+  const q = $("q").value.trim().toLowerCase();
+  let rows = state.players.filter(p => !q || p.name.toLowerCase().includes(q) || (p.house||"").toLowerCase().includes(q));
+  const limited = !q && !state.showAll && rows.length > CONFIG.initialRows;
+  if (limited) rows = rows.slice(0, CONFIG.initialRows);
+  $("moreBtn").hidden = !limited;
+  $("moreBtn").textContent = `PRESS START TO SEE ALL ${state.players.length}`;
+  const head = `<div class="srow h"><span>RANK</span><span>SLUG</span><span class="hs">HOUSE</span><span class="sc">CLUES</span></div>`;
+  $("scores").innerHTML = head + (rows.length ? rows.map(p => `<div class="srow"><span>${ord(p.rank).toUpperCase()}</span><span class="nm">${esc(p.name)}${state.hot === p ? `<span class="tagHot">HOT</span>` : ""}</span><span class="hs">${esc((p.house || "").replace(/^house\s*/i, "H"))}</span><span class="sc">${pad(p.clues.size, 2)}</span></div>`).join("")
+    : `<div class="none">NO SLUG NAMED "${esc(q.toUpperCase())}". INSERT CLUE TO CONTINUE.</div>`);
+}
+
+/* ---------- example data, used only when no sheet link is set ---------- */
+function sampleCSV(){
+  let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const tag = i => { const A = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"; return i < 26 ? A[i] : A[Math.floor(i/26)-1] + A[i%26]; };
+  const houses = ["House 1","House 2","House 3","House 4","House 5","House 6"];
+  const spots = ["Porter Squiggle","McHenry Library","Science Hill","Great Meadow","East Field","Quarry Amphitheater","Arboretum","Bay Tree Bookstore","Baskin Courtyard","Stevenson Knoll","Kresge Town Hall","Cowell Fountain","Merrill Steps","Oakes Field","Hagar Court","Crown Bridge","Music Center","Pogonip Trailhead","Lower Quarry","Stevenson Event Center"];
+  const lines = ["Timestamp,Email Address,Your name,Your house,Which clue did you find?,Approved"];
+  const start = new Date("2026-09-26T09:00:00"), span = Date.now() - start;
+  for (let i = 0; i < 42; i++){
+    const name = `Person ${tag(i)}`, email = "person" + i + "@ucsc.edu", house = houses[i % houses.length];
+    const n = Math.max(1, Math.min(spots.length, Math.round(Math.pow(rnd(), 1.15) * 21)));
+    spots.map((s,j) => [rnd(), j]).sort((a,b) => a[0]-b[0]).slice(0, n).forEach(([, j]) => {
+      const d = new Date(start.getTime() + Math.pow(rnd(), .6) * span);
+      const ts = `${d.getMonth()+1}/${d.getDate()}/${d.getFullYear()} ${d.getHours()}:${String(d.getMinutes()).padStart(2,"0")}:00`;
+      lines.push(`${ts},${email},${name},${house},"#${String(j+1).padStart(2,"0")} ${spots[j]}",yes`);
+    });
+  }
+  return lines.join("\n");
+}
+
+async function load(){
+  try{
+    let text;
+    if (CONFIG.sheetCsvUrl){
+      const res = await fetch(CONFIG.sheetCsvUrl + (CONFIG.sheetCsvUrl.includes("?") ? "&" : "?") + "t=" + Date.now(), { cache: "no-store" });
+      if (!res.ok) throw new Error("The sheet link returned " + res.status + ". Check that the tab is published as CSV.");
+      text = await res.text(); state.demo = false;
+    } else { text = sampleCSV(); state.demo = true; }
+    const rows = parseCSV(text);
+    if (rows.length < 1) throw new Error("The sheet is empty.");
+    render(compute(rows));
+    $("banner").textContent = "Showing example data";
+    $("banner").hidden = !state.demo;
+  } catch(e){
+    $("banner").textContent = e.message;
+    $("banner").hidden = false;
+  }
+}
+
+$("subtitle").textContent = CONFIG.subtitle;
+$("q").addEventListener("input", renderScores);
+$("moreBtn").addEventListener("click", () => { state.showAll = true; renderScores(); });
+$("refresh").addEventListener("click", load);
+drawCoaster();
+setInterval(load, CONFIG.refreshMinutes * 60000);
+load();
+</script>
