@@ -194,8 +194,10 @@ button,input{font:inherit; color:inherit}
 .shell:nth-child(3n+1) svg{transform:rotate(-10deg)} .shell:nth-child(3n) svg{transform:rotate(8deg)}
 .shell b{font-weight:800; line-height:1.2; overflow-wrap:anywhere}
 .shell span{font-size:13px}
+.star{color:#FDC700; text-shadow:0 0 1px #1A1530, 0 1px 0 #1A1530; margin-right:4px}
 .shell .tough{display:inline-block; background:var(--red); color:var(--cream); border-radius:999px; padding:0 8px; font-size:11px; font-weight:800; letter-spacing:.06em}
-.shell.buried b{font-family:var(--sign); font-weight:400; font-size:22px; color:var(--red)}
+.shell.fresh svg{opacity:.45; filter:grayscale(.6)}
+.shell.fresh > span{color:var(--red); font-weight:700}
 .foot{max-width:1084px; margin:40px auto 0; padding-top:18px; border-top:2px dashed var(--sand-dk); text-align:center; font-size:14px; font-weight:600}
 </style>
 
@@ -244,10 +246,10 @@ button,input{font:inherit; color:inherit}
       <h1><span>SLUG</span><span>SEARCH</span></h1>
       <span class="plaque">SANTA CRUZ, CALIFORNIA</span>
     </div>
-    <p class="tagline">Clues are hidden from the redwoods to the sand. Find one, submit the form, and your slug moves <b>downhill toward the Boardwalk</b>. I think Sammy said slow and steady wins… but going fast is also fun.</p>
+    <p class="tagline">Challenges are hidden from the redwoods to the sand. Do one, submit the form, and your slug moves <b>downhill toward the Boardwalk</b>. I think Sammy said slow and steady wins… but going fast is also fun.</p>
     <div class="scoreboard" aria-label="Hunt totals">
       <div><span class="k">SLUGS IN</span><span class="v" id="sPlayers">–</span></div>
-      <div><span class="k">CLUES FOUND</span><span class="v" id="sFinds">–</span></div>
+      <div><span class="k">CHALLENGES DONE</span><span class="v" id="sFinds">–</span></div>
       <div><span class="k">ON FIRE</span><span class="v sm" id="sStreak">–</span></div>
       <div><span class="k">DAYS LEFT</span><span class="v" id="sDays">–</span></div>
     </div>
@@ -445,7 +447,7 @@ button,input{font:inherit; color:inherit}
     </div>
     <div class="dash-copy">
       <h2 class="roadsign" id="dashTitle"><small>NEXT EXIT: THE BEACH</small>Downhill Dash</h2>
-      <p>Everyone starts as a <b>stump</b> up in the redwoods. Every clue moves you down the trail, and the deeper you get, the more you evolve.</p>
+      <p>Everyone starts as a <b>stump</b> up in the redwoods. Every challenge moves you down the trail, ★ challenges move you twice as far, and the deeper you get, the more you evolve.</p>
       <ol class="stages" id="stages"></ol>
       <h3 class="legend-title">Top 10 on the trail</h3>
       <p class="legend-note">Numbered pins are the top 10. Everyone else is on the map too. Hover or tap any icon to see who it is.</p>
@@ -486,10 +488,10 @@ button,input{font:inherit; color:inherit}
 <section class="beach" aria-labelledby="beachTitle">
   <div class="beach-head">
     <h2 class="surfboard" id="beachTitle">Beachcombing</h2>
-    <p>Every clue is a shell on the beach. The number is how many slugs found it. Red X's are clues still buried somewhere.</p>
+    <p>Every challenge is a shell on the beach, with how many slugs have done it. ★ challenges are worth double. Faded shells are still waiting for their first slug.</p>
   </div>
   <div class="shells" id="shells"></div>
-  <p class="foot">Each clue counts once per resident. Ties go to whoever got there first. The board refreshes on its own every few minutes.</p>
+  <p class="foot">Each challenge counts once per resident. Ties go to whoever got there first. ★ challenges count double. The board refreshes on its own every few minutes.</p>
 </section>
 
 <script>
@@ -498,10 +500,32 @@ const CONFIG = {
   subtitle: "Stevenson College · Fall Quarter 2026",
   // Google Sheet → File → Share → Publish to web → pick the PUBLIC tab → CSV → copy link.
   sheetCsvUrl: "",
-  totalClues: 20,
+  totalClues: 10,                // how many challenges there are this quarter
+  // Every challenge, worded exactly like the form's options. They all show on the beach from day one.
+  challenges: [
+    "Attend and check-in at a Cowell Senate or Stevenson Council mtg.",
+    "Schedule and attend a meeting with your college affiliated advisor this quarter.",
+    "Make a consultation meeting with “On the Margins”",
+    "Meet, in-person with your RA for a 1:1 check in.",
+    "Take a group photo with all your apartment or room mates (in December)",
+    "Take a picture of yourself cooking dinner and eating together as a household.",
+    "Locate the student food pantry or emergency fund office."
+    // add the rest of the 10 here
+  ],
+  // ★ Starred challenges are worth starPoints instead of 1. Each entry is a phrase from the challenge's
+  // wording (case-insensitive); a list means "any of these phrases".
+  starPoints: 2,
+  starred: [
+    ["Cowell Senate", "Stevenson Council"],
+    "college affiliated advisor",
+    "On the Margins",
+    "RA for a 1:1",
+    "group photo with all your",
+    "cooking dinner"
+  ],
   endsOn: "2026-12-11",
   refreshMinutes: 5,
-  streakHours: 24,                // "on fire" = most clues found within this many hours…
+  streakHours: 24,                // "on fire" = most challenges done within this many hours…
   streakMin: 3,                   // …as long as it's at least this many
   // Words to look for in each column header (case-insensitive). Matches the "CWST Campus Challenge" form.
   // There is no name question yet, so the board shows the part of the email before the @.
@@ -509,7 +533,7 @@ const CONFIG = {
   requireApproval: false,
   initialRows: 20,
   // When a slug "evolves" on the map: stump → campus critter → volleyball
-  evolve: { critter: 7, volleyball: 15 },
+  evolve: { critter: 5, volleyball: 11 },   // in points
   mapMarkers: 10,
   mapCrowd: 150,                  // everyone else shows as a small icon on the map (up to this many)
   tickets: 12
@@ -545,7 +569,7 @@ function compute(rows){
   for (const [k, word] of Object.entries(CONFIG.columns))
     col[k] = headers.findIndex(h => h.includes(word) && !(k === "name" && h.includes("email")));
   if (col.name < 0 && col.email < 0) throw new Error("Couldn't find a Name or Email column in the sheet.");
-  if (col.clue < 0) throw new Error("Couldn't find a Clue column in the sheet.");
+  if (col.clue < 0) throw new Error("Couldn't find the challenge column in the sheet.");
   const subs = rows.slice(1).map(r => ({
     t: col.timestamp >= 0 ? parseTime(r[col.timestamp]) : null,
     email: col.email >= 0 ? (r[col.email]||"").trim().toLowerCase() : "",
@@ -559,16 +583,17 @@ function compute(rows){
   let serial = 0;
   for (const s of subs){
     const key = s.email || s.name.toLowerCase();
-    if (!players.has(key)) players.set(key, { name: s.name || s.email.split("@")[0], house: s.house, clues: new Set(), last: null, times: [] });
+    if (!players.has(key)) players.set(key, { name: s.name || s.email.split("@")[0], house: s.house, clues: new Set(), points: 0, stars: 0, last: null, times: [] });
     const p = players.get(key);
     if (s.name) p.name = s.name;
     if (s.house) p.house = s.house;
     if (p.clues.has(s.clue)) continue;
-    p.clues.add(s.clue); p.last = s.t; if (s.t) p.times.push(s.t);
+    p.clues.add(s.clue); p.points += valueOf(s.clue); if (starOf(s.clue)) p.stars++;
+    p.last = s.t; if (s.t) p.times.push(s.t);
     clueFinders.set(s.clue, (clueFinders.get(s.clue)||0) + 1);
-    feed.push({ no: ++serial, name: p.name, clue: s.clue, t: s.t, n: p.clues.size });
+    feed.push({ no: ++serial, name: p.name, clue: s.clue, t: s.t, pts: p.points });
   }
-  const list = [...players.values()].sort((a,b) => b.clues.size - a.clues.size || (a.last||0) - (b.last||0) || a.name.localeCompare(b.name));
+  const list = [...players.values()].sort((a,b) => b.points - a.points || (a.last||0) - (b.last||0) || a.name.localeCompare(b.name));
   list.forEach((p,i) => p.rank = i + 1);
   return { list, clueFinders, feed: feed.slice(-CONFIG.tickets).reverse(), hasHouse: col.house >= 0 };
 }
@@ -581,7 +606,10 @@ function ago(d){
   const dd = Math.round(h/24); return dd === 1 ? "yesterday" : dd + "d ago";
 }
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const total = () => Math.max(CONFIG.totalClues, 1);
+const starOf = clue => { const c = clue.toLowerCase(); return CONFIG.starred.some(s => [].concat(s).some(w => c.includes(w.toLowerCase()))); };
+const valueOf = clue => starOf(clue) ? CONFIG.starPoints : 1;
+const total = () => Math.max(CONFIG.totalClues + CONFIG.starred.length * (CONFIG.starPoints - 1), 1);   // max points
+const star = clue => starOf(clue) ? `<span class="star" title="Starred: worth ${CONFIG.starPoints} points">★</span>` : "";
 const stripNum = c => c.replace(/^#?\d+\s*[-–—.:]?\s*/, "");
 const ord = n => n + (["th","st","nd","rd"][(n % 100 - 20) % 10] || ["th","st","nd","rd"][n % 100] || "th");
 const pad = (n, w) => String(n).padStart(w, "0");
@@ -625,7 +653,7 @@ function thresholds(){
   return { c, v, T };
 }
 function formOf(p){
-  const { c, v } = thresholds(), n = p.clues.size;
+  const { c, v } = thresholds(), n = p.points;
   if (n >= v) return { stage: "ball", label: "Volleyball", sym: "m-ball", w: 48, h: 48 };
   if (n >= c) { const a = ANIMALS[hashName(p.name) % ANIMALS.length]; return { stage: "critter", label: a.name, sym: a.id, w: a.w, h: a.h }; }
   return { stage: "stump", label: "Stump", sym: "m-stump", w: 48, h: 48 };
@@ -641,8 +669,8 @@ function drawMap(list){
   const lenFor = n => n <= c ? n / c * L1 : n <= v ? L1 + (n - c) / (v - c) * (L2 - L1) : L2 + (n - v) / Math.max(T - v, 1) * (L - L2) * .97;
   const at = len => trail.getPointAtLength(Math.max(0, Math.min(L, len)));
 
-  $("divA").textContent = `CRITTER ZONE · ${c}+ CLUES`;
-  $("divB").textContent = `VOLLEYBALL BEACH · ${v}+`;
+  $("divA").textContent = `CRITTER ZONE · ${c}+ POINTS`;
+  $("divB").textContent = `VOLLEYBALL BEACH · ${v}+ PTS`;
 
   let ticks = "";
   const step = T > 12 ? 5 : 1;
@@ -669,22 +697,22 @@ function drawMap(list){
   list.slice(CONFIG.mapMarkers, CONFIG.mapMarkers + CONFIG.mapCrowd).forEach(p => {
     const f = formOf(p), h = hashName(p.name + "#");
     const along = ((h % 1000) / 1000 - .5) * 60, side = (h >> 10) % 2 ? 1 : -1, dist = 26 + ((h >> 11) % 60);
-    const q = place(lenFor(p.clues.size) + along, side * dist, f.stage);
+    const q = place(lenFor(p.points) + along, side * dist, f.stage);
     const sz = 24, hgt = sz * f.h / f.w;
-    crowd += `<g class="pin small"><title>#${p.rank} ${esc(p.name)}: ${p.clues.size} clues (${f.label})</title><use href="#${f.sym}" x="${(q.x - sz / 2).toFixed(1)}" y="${(q.y - hgt).toFixed(1)}" width="${sz}" height="${hgt.toFixed(1)}"/></g>`;
+    crowd += `<g class="pin small"><title>#${p.rank} ${esc(p.name)}: ${p.points} pts (${f.label})</title><use href="#${f.sym}" x="${(q.x - sz / 2).toFixed(1)}" y="${(q.y - hgt).toFixed(1)}" width="${sz}" height="${hgt.toFixed(1)}"/></g>`;
   });
 
   const groups = new Map();
-  top.forEach(p => { const k = p.clues.size; groups.set(k, (groups.get(k) || []).concat(p)); });
+  top.forEach(p => { const k = p.points; groups.set(k, (groups.get(k) || []).concat(p)); });
   let out = crowd;
   [...top].reverse().forEach(p => {
-    const grp = groups.get(p.clues.size), idx = grp.indexOf(p), f = formOf(p);
+    const grp = groups.get(p.points), idx = grp.indexOf(p), f = formOf(p);
     const k = Math.floor(idx / 2), along = k === 0 ? 0 : (k % 2 ? -1 : 1) * Math.ceil(k / 2) * 52;
     const perp = grp.length === 1 ? 0 : 30 * (idx % 2 ? 1 : -1);
-    const { x, y } = place(lenFor(p.clues.size) + along, perp, f.stage);
+    const { x, y } = place(lenFor(p.points) + along, perp, f.stage);
     const sz = f.stage === "critter" ? 46 : 42, hgt = sz * f.h / f.w;
     const crown = p.rank === 1 ? `<path d="M-12 ${-hgt - 6} l4 -12 l8 8 l8 -10 l8 10 l8 -8 l4 12z" transform="translate(-4 0)" fill="#FDC700" stroke="#1A1530" stroke-width="2" stroke-linejoin="round"/>` : "";
-    out += `<g class="pin" transform="translate(${x.toFixed(1)} ${y.toFixed(1)})"><title>#${p.rank} ${esc(p.name)}: ${p.clues.size} clues (${f.label})</title>
+    out += `<g class="pin" transform="translate(${x.toFixed(1)} ${y.toFixed(1)})"><title>#${p.rank} ${esc(p.name)}: ${p.points} pts (${f.label})</title>
       <ellipse cy="2" rx="${sz * .42}" ry="4" fill="#1A1530" opacity=".25"/>
       <use href="#${f.sym}" x="${-sz / 2}" y="${-hgt + 2}" width="${sz}" height="${hgt}"/>${crown}
       <g transform="translate(${sz / 2 - 2} ${-hgt + 4})"><circle r="11" fill="${colors[badgeClass(p.rank)]}" stroke="#1A1530" stroke-width="2.5"/><text y="4" text-anchor="middle" font-family="Bungee, Arial Black, sans-serif" font-size="11" fill="#1A1530">${p.rank}</text></g></g>`;
@@ -695,13 +723,13 @@ function drawMap(list){
   list.forEach(p => count[formOf(p).stage]++);
   const here = n => `${n} ${n === 1 ? "slug" : "slugs"} here`;
   $("stages").innerHTML = [
-    { sym: { sym: "m-stump", w: 48, h: 48 }, name: "Stump", where: "The redwoods", range: `0–${c - 1} clues`, n: count.stump },
-    { sym: { sym: "deer", w: 50, h: 44 }, name: "Campus critter", where: "The Great Meadow", range: `${c}–${v - 1} clues`, n: count.critter },
-    { sym: { sym: "m-ball", w: 48, h: 48 }, name: "Volleyball", where: "The beach", range: `${v}–${T} clues`, n: count.ball }
+    { sym: { sym: "m-stump", w: 48, h: 48 }, name: "Stump", where: "The redwoods", range: `0–${c - 1} pts`, n: count.stump },
+    { sym: { sym: "deer", w: 50, h: 44 }, name: "Campus critter", where: "The Great Meadow", range: `${c}–${v - 1} pts`, n: count.critter },
+    { sym: { sym: "m-ball", w: 48, h: 48 }, name: "Volleyball", where: "The beach", range: `${v}–${T} pts`, n: count.ball }
   ].map(s => `<li>${formIcon(s.sym)}<span><b>${s.name}</b><small>${s.where} · ${here(s.n)}</small></span><span class="rg">${s.range}</span></li>`).join("");
 
   $("legend").innerHTML = top.map(p => { const f = formOf(p);
-    return `<li><span class="badge ${badgeClass(p.rank)}">${p.rank}</span><span class="form" title="${f.label}">${formIcon(f)}</span><span style="min-width:0"><b>${esc(p.name)}</b><small>${f.label}${p.house ? " · " + esc(p.house) : ""} · ${ago(p.last)}</small></span><span class="n">${p.clues.size}/${T}</span></li>`;
+    return `<li><span class="badge ${badgeClass(p.rank)}">${p.rank}</span><span class="form" title="${f.label}">${formIcon(f)}</span><span style="min-width:0"><b>${esc(p.name)}</b><small>${f.label}${p.house ? " · " + esc(p.house) : ""} · ${ago(p.last)}</small></span><span class="n">${p.points}/${T}</span></li>`;
   }).join("") || `<li>No slugs on the trail yet.</li>`;
 }
 
@@ -717,8 +745,8 @@ function podiumSlug(crown){
 }
 function drawPodium(list){
   const cls = ["s1","s2","s3"], place = ["1st","2nd","3rd"];
-  $("podium").innerHTML = list.slice(0,3).map((p,i) => `<div class="stand ${cls[i]}">${podiumSlug(i === 0)}<div class="stump"><span class="pl">${place[i]}</span><span class="nm">${esc(p.name)}</span><small>${p.clues.size} clues${p.house ? " · " + esc(p.house) : ""}</small></div></div>`).join("")
-    || `<p class="pod-empty">The stumps are empty. First three slugs to find a clue take them.</p>`;
+  $("podium").innerHTML = list.slice(0,3).map((p,i) => `<div class="stand ${cls[i]}">${podiumSlug(i === 0)}<div class="stump"><span class="pl">${place[i]}</span><span class="nm">${esc(p.name)}</span><small>${p.points} pts${p.stars ? ` · ${"★".repeat(p.stars)}` : ""}${p.house ? " · " + esc(p.house) : ""}</small></div></div>`).join("")
+    || `<p class="pod-empty">The stumps are empty. First three slugs to finish a challenge take them.</p>`;
 }
 
 function render({ list, clueFinders, feed, hasHouse }){
@@ -735,37 +763,41 @@ function render({ list, clueFinders, feed, hasHouse }){
   state.hot = hot && hotN >= CONFIG.streakMin ? hot : null;
   if (state.hot){
     $("sStreak").textContent = `${hot.name.toUpperCase()} ×${hotN}`;
-    $("hot").innerHTML = `HOT STREAK! <b>${esc(hot.name.toUpperCase())}</b> FOUND ${hotN} CLUES ${win}`;
+    $("hot").innerHTML = `HOT STREAK! <b>${esc(hot.name.toUpperCase())}</b> DID ${hotN} CHALLENGES ${win}`;
   } else {
     $("sStreak").textContent = "NOBODY YET";
-    $("hot").textContent = `NOBODY'S ON FIRE YET. FIND ${CONFIG.streakMin} CLUES ${win} TO LIGHT IT UP`;
+    $("hot").textContent = `NOBODY'S ON FIRE YET. DO ${CONFIG.streakMin} CHALLENGES ${win} TO LIGHT IT UP`;
   }
 
   drawMap(list);
   drawPodium(list);
   renderScores();
 
-  $("tickets").innerHTML = feed.map(f => `<div class="ticket"><span class="adm"><span>ADMIT ONE</span><span>No. ${pad(f.no, 4)}</span></span><b>${esc(f.name)}</b><span class="what">found ${esc(stripNum(f.clue))}</span><span class="when">${ago(f.t)} · clue #${f.n} for them</span></div>`).join("")
+  $("tickets").innerHTML = feed.map(f => `<div class="ticket"><span class="adm"><span>ADMIT ONE</span><span>No. ${pad(f.no, 4)}</span></span><b>${esc(f.name)}</b><span class="what">${star(f.clue)}${esc(stripNum(f.clue))}</span><span class="when">+${valueOf(f.clue)} ${valueOf(f.clue) === 1 ? "pt" : "pts"} · ${ago(f.t)} · ${f.pts} total</span></div>`).join("")
     || `<div class="ticket"><span class="adm"><span>ADMIT ONE</span><span>No. 0000</span></span><b>No finds yet</b><span class="what">The first ticket is waiting for you.</span></div>`;
 
   $("housePanel").hidden = !hasHouse;
   if (hasHouse){
     const hm = new Map();
-    for (const p of list){ const h = p.house || "No house"; const o = hm.get(h) || { n:0, f:0 }; o.n++; o.f += p.clues.size; hm.set(h, o); }
+    for (const p of list){ const h = p.house || "No house"; const o = hm.get(h) || { n:0, f:0 }; o.n++; o.f += p.points; hm.set(h, o); }
     const hs = [...hm.entries()].sort((a,b) => a[0].localeCompare(b[0], undefined, { numeric:true }));
     const max = Math.max(...hs.map(h => h[1].f), 1);
     $("towers").innerHTML = hs.map(([h,o]) => {
       const lead = o.f === max, pct = Math.max(o.f / max, .04) * 100;
-      return `<div class="tower"><div class="pole">${lead ? `<span class="ding">DING!</span>` : ""}${bellSVG(lead)}<span class="puck" style="bottom:${pct}%">${slugPuck}</span></div><div class="base"><b>${esc(h)}</b><span>${o.f} clues · ${o.n} slugs</span></div></div>`;
+      return `<div class="tower"><div class="pole">${lead ? `<span class="ding">DING!</span>` : ""}${bellSVG(lead)}<span class="puck" style="bottom:${pct}%">${slugPuck}</span></div><div class="base"><b>${esc(h)}</b><span>${o.f} pts · ${o.n} slugs</span></div></div>`;
     }).join("");
   }
 
-  const names = [...clueFinders.keys()].sort((a,b) => a.localeCompare(b, undefined, { numeric:true }));
-  const minC = Math.min(...clueFinders.values());
-  const missing = Math.max(CONFIG.totalClues - names.length, 0);
-  $("shells").innerHTML = names.map((c,i) => { const n = clueFinders.get(c), tough = n === minC && names.length > 1;
-      return `<div class="shell"><svg viewBox="0 0 80 70" style="color:${shellColors[i % shellColors.length]}" aria-hidden="true"><use href="#shell"/></svg><b>${esc(c)}</b><span>${n} ${n===1?"slug":"slugs"} found it</span>${tough ? `<span class="tough">TOUGHEST</span>` : ""}</div>`; }).join("")
-    + Array.from({ length: missing }, () => `<div class="shell buried"><svg viewBox="0 0 80 70" aria-hidden="true"><use href="#dig"/></svg><b>???</b><span>still buried</span></div>`).join("");
+  const norm = s => s.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  const done = new Map();
+  clueFinders.forEach((n, c) => done.set(norm(c), { name: done.get(norm(c))?.name || c, n: (done.get(norm(c))?.n || 0) + n }));
+  const all = CONFIG.challenges.map(c => ({ name: c, n: done.get(norm(c))?.n || 0 }));
+  done.forEach((v, k) => { if (!CONFIG.challenges.some(c => norm(c) === k)) all.push(v); });
+  const doneCounts = all.filter(c => c.n > 0).map(c => c.n), minC = Math.min(...doneCounts);
+  $("shells").innerHTML = all.map((c, i) => {
+    const tough = c.n > 0 && c.n === minC && doneCounts.length > 1, pts = valueOf(c.name);
+    return `<div class="shell${c.n ? "" : " fresh"}"><svg viewBox="0 0 80 70" style="color:${shellColors[i % shellColors.length]}" aria-hidden="true"><use href="#shell"/></svg><b>${star(c.name)}${esc(c.name)}</b><span>${pts} ${pts === 1 ? "pt" : "pts"} · ${c.n ? `${c.n} ${c.n === 1 ? "slug" : "slugs"} did it` : "nobody yet, be first"}</span>${tough ? `<span class="tough">TOUGHEST</span>` : ""}</div>`;
+  }).join("") || `<p>No challenges listed yet.</p>`;
 }
 
 function renderScores(){
@@ -775,8 +807,8 @@ function renderScores(){
   if (limited) rows = rows.slice(0, CONFIG.initialRows);
   $("moreBtn").hidden = !limited;
   $("moreBtn").textContent = `PRESS START TO SEE ALL ${state.players.length}`;
-  const head = `<div class="srow h"><span>RANK</span><span>SLUG</span><span class="hs">HOUSE</span><span class="sc">CLUES</span></div>`;
-  $("scores").innerHTML = head + (rows.length ? rows.map(p => `<div class="srow"><span>${ord(p.rank).toUpperCase()}</span><span class="nm">${esc(p.name)}${state.hot === p ? `<span class="tagHot">HOT</span>` : ""}</span><span class="hs">${esc((p.house || "").replace(/^house\s*/i, "H"))}</span><span class="sc">${pad(p.clues.size, 2)}</span></div>`).join("")
+  const head = `<div class="srow h"><span>RANK</span><span>SLUG</span><span class="hs">HOUSE</span><span class="sc">PTS</span></div>`;
+  $("scores").innerHTML = head + (rows.length ? rows.map(p => `<div class="srow"><span>${ord(p.rank).toUpperCase()}</span><span class="nm">${esc(p.name)}${state.hot === p ? `<span class="tagHot">HOT</span>` : ""}</span><span class="hs">${esc((p.house || "").replace(/^house\s*/i, "H"))}</span><span class="sc">${pad(p.points, 2)}</span></div>`).join("")
     : `<div class="none">NO SLUG NAMED "${esc(q.toUpperCase())}". INSERT CLUE TO CONTINUE.</div>`);
 }
 
@@ -785,16 +817,16 @@ function sampleCSV(){
   let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
   const tag = i => { const A = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"; return i < 26 ? A[i] : A[Math.floor(i/26)-1] + A[i%26]; };
   const houses = ["House 1","House 2","House 3","House 4","House 5","House 6"];
-  const spots = ["Porter Squiggle","McHenry Library","Science Hill","Great Meadow","East Field","Quarry Amphitheater","Arboretum","Bay Tree Bookstore","Baskin Courtyard","Stevenson Knoll","Kresge Town Hall","Cowell Fountain","Merrill Steps","Oakes Field","Hagar Court","Crown Bridge","Music Center","Pogonip Trailhead","Lower Quarry","Stevenson Event Center"];
-  const lines = ["Timestamp,Email Address,Your name,Your house,Which clue did you find?,Approved"];
+  const spots = CONFIG.challenges.concat(["Visit a student wellness center and grab one mental health brochure.", "Find the LSS office and take a selfie outside of the building.", "Watch the sun rise or set on campus."]).slice(0, Math.max(CONFIG.totalClues, CONFIG.challenges.length));
+  const lines = ["Timestamp,Email Address,Your name,Your house,Which challenge did you choose to do?,Approved"];
   const start = new Date("2026-09-26T09:00:00"), span = Date.now() - start;
   for (let i = 0; i < 42; i++){
     const name = `Person ${tag(i)}`, email = "person" + i + "@ucsc.edu", house = houses[i % houses.length];
-    const n = Math.max(1, Math.min(spots.length, Math.round(Math.pow(rnd(), 1.15) * 21)));
+    const n = Math.max(1, Math.min(spots.length, Math.round(Math.pow(rnd(), 2) * 11)));
     spots.map((s,j) => [rnd(), j]).sort((a,b) => a[0]-b[0]).slice(0, n).forEach(([, j]) => {
       const d = new Date(start.getTime() + Math.pow(rnd(), .6) * span);
       const ts = `${d.getMonth()+1}/${d.getDate()}/${d.getFullYear()} ${d.getHours()}:${String(d.getMinutes()).padStart(2,"0")}:00`;
-      lines.push(`${ts},${email},${name},${house},"#${String(j+1).padStart(2,"0")} ${spots[j]}",yes`);
+      lines.push(`${ts},${email},${name},${house},"${spots[j]}",yes`);
     });
   }
   return lines.join("\n");

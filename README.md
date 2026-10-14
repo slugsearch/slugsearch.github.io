@@ -29,13 +29,15 @@ Optional: add a "Your name" question and a "Your house" question to the form. Th
 | --- | --- |
 | `sheetCsvUrl` | Published CSV link of the `Public` tab |
 | `totalClues` | How many challenges exist this quarter |
+| `challenges` | Every challenge, worded exactly like the form. All of them show on the beach from day one |
+| `starred` / `starPoints` | Phrases that mark ★ challenges, and what they're worth (default 2; everything else is 1) |
 | `endsOn` | Last day of the hunt |
-| `evolve` | Clue counts where a slug turns from stump → critter → volleyball on the map |
+| `evolve` | Point totals where a slug turns from stump → critter → volleyball on the map |
 | `columns` | Header words used to find each column |
 | `requireApproval` | If `true`, a find only counts once an `Approved` column says yes |
 | `mapMarkers` / `mapCrowd` | Big numbered pins on the map / small icons for everyone else |
 
-Each challenge counts once per resident. Ties go to whoever reached that count first.
+Scoring: each challenge counts once per resident. Regular challenges are 1 point, ★ challenges are 2. Ties go to whoever reached that score first.
 
 ## Hosting
 
