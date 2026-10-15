@@ -1,6 +1,6 @@
 # Slug Search
 
-Leaderboard for the Stevenson quarter-long campus scavenger hunt. It's one static page (`index.html`) that reads the Google Form's response sheet and ranks everyone automatically. No server, no build step.
+Leaderboard for the Stevenson and Cowell College quarter-long campus scavenger hunt. It's one static page (`index.html`) that reads the Google Form's response sheet and ranks everyone automatically. No server, no build step.
 
 ## How it works
 
