@@ -500,23 +500,19 @@ const CONFIG = {
   subtitle: "Stevenson College · Fall Quarter 2026",
   // Google Sheet → File → Share → Publish to web → pick the PUBLIC tab → CSV → copy link.
   sheetCsvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vS0o1uqh1H2fIBcthT_QqvoUMOpSCckfhdSFExaWZDuUgqSDhDuAr6keP_HfHg2iUsqSJuuWIBBRIuE/pub?gid=1838503812&single=true&output=csv",
-  totalClues: 14,                // how many challenges there are this quarter
+  totalClues: 10,                // how many challenges there are this quarter
   // Every challenge, worded exactly like the form's options. They all show on the beach from day one.
   challenges: [
-    "Take a picture of yourself at a job interview/internship fair.",
-    "Take a picture of your latest resume.",
-    "Shoot a picture of yourself at a social event in cowell or stevenson.",
-    "Take a picture of yourself cooking dinner and eating together as a household.",
-    "Take a picture of a completed apartment or room chore chart for the duration of a month.",
-    "Take a picture of you recycling an item correctly at the recycling bins.",
-    "Take a group photo with all your apartment or room mates (in December)",
-    "Take a photo of yourself working out or playing a sport/exercising.",
-    "Take a photo of yourself picking flowers from or assisting with caring for the UCSC Farm.",
-    "Meet, in-person with your RA for a 1:1 check in.",
-    "Create a profile on a Job or Networking professional platform.",
-    "Attend and check-in at a Cowell Senate or Stevenson Council mtg.",
-    "Schedule and attend a meeting with your college affiliated advisor this quarter.",
-    "Make a consultation meeting with “On the Margins’"
+    "Locate the student food pantry or emergency fund office.",
+    "Visit a student wellness center (Cowell Health Center)",
+    "Identify the overnight study lounge or safe late-night space on campus.",
+    "Attending a Cowell /Stevenson event",
+    "Take a picture of yourself cooking dinner and eating together as a household. 5",
+    "Meet, in-person with your RA for a 1:1 check in. 5",
+    "Attend and check-in at a Cowell Senate or Stevenson Council mtg. 4",
+    "Schedule and attend a meeting with your college affiliated advisor this quarter. 5",
+    "Take a group photo with all your apartment mates (in December)",
+    "*Make a consultation meeting with “On the Margins’"
   ],
   // ★ Starred challenges are worth starPoints instead of 1. Each entry is a phrase from the challenge's
   // wording (case-insensitive); a list means "any of these phrases".
@@ -539,7 +535,7 @@ const CONFIG = {
   requireApproval: false,
   initialRows: 20,
   // When a slug "evolves" on the map: stump → campus critter → volleyball
-  evolve: { critter: 7, volleyball: 14 },   // in points (max is 20: 14 challenges, 6 of them ★)
+  evolve: { critter: 5, volleyball: 11 },   // in points (max is 16: 10 challenges, 6 of them ★)
   mapMarkers: 10,
   mapCrowd: 150,                  // everyone else shows as a small icon on the map (up to this many)
   tickets: 12
@@ -616,7 +612,8 @@ const starOf = clue => { const c = clue.toLowerCase(); return CONFIG.starred.som
 const valueOf = clue => starOf(clue) ? CONFIG.starPoints : 1;
 const total = () => Math.max(CONFIG.totalClues + CONFIG.starred.length * (CONFIG.starPoints - 1), 1);   // max points
 const star = clue => starOf(clue) ? `<span class="star" title="Starred: worth ${CONFIG.starPoints} points">★</span>` : "";
-const stripNum = c => c.replace(/^#?\d+\s*[-–—.:]?\s*/, "");
+// Display name for a challenge: drops a leading "#3"/"*" and the old trailing point numbers ("… household. 5").
+const stripNum = c => c.replace(/^\s*(#?\d+\s*[-–—.:]?|\*+)\s*/, "").replace(/\s+\d+\s*$/, "");
 const ord = n => n + (["th","st","nd","rd"][(n % 100 - 20) % 10] || ["th","st","nd","rd"][n % 100] || "th");
 const pad = (n, w) => String(n).padStart(w, "0");
 const badgeClass = r => r === 1 ? "g" : r === 2 ? "o" : r === 3 ? "t" : "";
@@ -794,7 +791,7 @@ function render({ list, clueFinders, feed, hasHouse }){
     }).join("");
   }
 
-  const norm = s => s.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  const norm = s => stripNum(s).toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
   const done = new Map();
   clueFinders.forEach((n, c) => done.set(norm(c), { name: done.get(norm(c))?.name || c, n: (done.get(norm(c))?.n || 0) + n }));
   const all = CONFIG.challenges.map(c => ({ name: c, n: done.get(norm(c))?.n || 0 }));
@@ -802,7 +799,7 @@ function render({ list, clueFinders, feed, hasHouse }){
   const doneCounts = all.filter(c => c.n > 0).map(c => c.n), minC = Math.min(...doneCounts);
   $("shells").innerHTML = all.map((c, i) => {
     const tough = c.n > 0 && c.n === minC && doneCounts.length > 1, pts = valueOf(c.name);
-    return `<div class="shell${c.n ? "" : " fresh"}"><svg viewBox="0 0 80 70" style="color:${shellColors[i % shellColors.length]}" aria-hidden="true"><use href="#shell"/></svg><b>${star(c.name)}${esc(c.name)}</b><span>${pts} ${pts === 1 ? "pt" : "pts"} · ${c.n ? `${c.n} ${c.n === 1 ? "slug" : "slugs"} did it` : "nobody yet, be first"}</span>${tough ? `<span class="tough">TOUGHEST</span>` : ""}</div>`;
+    return `<div class="shell${c.n ? "" : " fresh"}"><svg viewBox="0 0 80 70" style="color:${shellColors[i % shellColors.length]}" aria-hidden="true"><use href="#shell"/></svg><b>${star(c.name)}${esc(stripNum(c.name))}</b><span>${pts} ${pts === 1 ? "pt" : "pts"} · ${c.n ? `${c.n} ${c.n === 1 ? "slug" : "slugs"} did it` : "nobody yet, be first"}</span>${tough ? `<span class="tough">TOUGHEST</span>` : ""}</div>`;
   }).join("") || `<p>No challenges listed yet.</p>`;
 }
 
