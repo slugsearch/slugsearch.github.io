@@ -428,7 +428,7 @@ button,input{font:inherit; color:inherit}
           <path d="M0 380 H600" stroke="#FFF6E5" stroke-width="2" stroke-dasharray="6 8" opacity=".5"/>
           <g transform="translate(596 372)"><rect x="-176" y="-14" width="176" height="24" rx="12" fill="#1A1530"/><text x="-88" y="2.5" text-anchor="middle" fill="#FDC700" id="divA">CRITTER ZONE</text></g>
           <path d="M0 776 H600" stroke="#1A1530" stroke-width="2" stroke-dasharray="6 8" opacity=".35"/>
-          <g transform="translate(4 768)"><rect x="0" y="-14" width="196" height="24" rx="12" fill="#1A1530"/><text x="98" y="2.5" text-anchor="middle" fill="#FDC700" id="divB">VOLLEYBALL BEACH</text></g>
+          <g transform="translate(4 768)"><rect x="0" y="-14" width="150" height="24" rx="12" fill="#1A1530"/><text x="75" y="2.5" text-anchor="middle" fill="#FDC700" id="divB">BEACH</text></g>
         </g>
 
         <path id="trail" d="M300 78 C470 95 520 210 390 255 S100 300 160 400 S500 470 430 565 S90 610 165 700 S480 735 400 800 S300 860 470 862" stroke="#FFF6E5" stroke-width="8" stroke-linecap="round" stroke-dasharray="2 15" fill="none"/>
@@ -438,7 +438,7 @@ button,input{font:inherit; color:inherit}
           <text x="20" y="430" fill="#1A1530" font-size="14">GREAT MEADOW</text>
           <text x="20" y="706" fill="#1A1530" font-size="12" opacity=".75">DOWNTOWN</text>
           <text x="110" y="898" text-anchor="middle" fill="#D7263D" font-size="13">BOARDWALK</text>
-          <text x="540" y="902" text-anchor="middle" fill="#1A1530" font-size="10">THE NET</text>
+          
           <text x="20" y="980" fill="#E9FBF7">MONTEREY BAY</text>
         </g>
         <g id="ticks"></g>
@@ -673,7 +673,7 @@ function drawMap(list){
   const at = len => trail.getPointAtLength(Math.max(0, Math.min(L, len)));
 
   $("divA").textContent = `CRITTER ZONE · ${c}+ POINTS`;
-  $("divB").textContent = `VOLLEYBALL BEACH · ${v}+ PTS`;
+  $("divB").textContent = `BEACH · ${v}+ PTS`;
 
   let ticks = "";
   const step = T > 12 ? 5 : 1;
