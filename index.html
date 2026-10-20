@@ -44,6 +44,16 @@ button,input{font:inherit; color:inherit}
 .marquee .plaque{display:inline-block; background:var(--cream); color:var(--red); font-family:var(--sign); font-size:clamp(11px,1.6vw,14px); padding:4px 14px; border-radius:6px; letter-spacing:.08em}
 .tagline{max-width:46ch; font-size:clamp(17px,2.2vw,20px); font-weight:600; background:rgba(20,33,74,.72); padding:12px 18px; border-radius:18px; margin:0}
 .tagline b{color:var(--gold)}
+.cta{display:inline-flex; align-items:center; gap:10px; background:var(--gold); color:var(--ink); font-family:var(--sign); font-size:clamp(17px,2.4vw,21px); letter-spacing:.02em;
+  padding:14px 28px; border-radius:999px; text-decoration:none; border:3px solid var(--ink); box-shadow:0 6px 0 var(--ink); transition:transform .1s, box-shadow .1s}
+.cta:hover{transform:translateY(-2px); box-shadow:0 8px 0 var(--ink)}
+.cta:active{transform:translateY(4px); box-shadow:0 2px 0 var(--ink)}
+.cta svg{width:22px; height:22px; flex:none}
+.cta-note{margin:-12px 0 0; font-size:13px; font-weight:600; color:var(--cream); background:rgba(20,33,74,.72); padding:3px 12px; border-radius:999px}
+.cta.surf{background:var(--surf); color:var(--cream)}
+.fab{position:fixed; right:16px; bottom:calc(16px + env(safe-area-inset-bottom, 0px)); z-index:50; font-size:15px; padding:11px 20px; box-shadow:0 5px 0 var(--ink), 0 10px 24px rgba(0,0,0,.35)}
+@media (prefers-reduced-motion: no-preference){.cta:not(.fab){animation:nudge 3.2s ease-in-out infinite}}
+@keyframes nudge{0%,88%,100%{transform:rotate(0)} 92%{transform:rotate(-2deg)} 96%{transform:rotate(2deg)}}
 .scoreboard{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); width:min(100%,860px); background:var(--ink); border-radius:14px; border:4px solid #2B2550; overflow:hidden}
 .scoreboard div{padding:12px 10px; display:grid; gap:8px; justify-items:center; min-width:0}
 .scoreboard div + div{border-left:3px dashed #2B2550}
@@ -188,6 +198,7 @@ button,input{font:inherit; color:inherit}
 .beach-head{max-width:1084px; margin:0 auto 26px; display:flex; justify-content:space-between; align-items:end; gap:14px; flex-wrap:wrap}
 .surfboard{display:inline-block; background:var(--surf); color:var(--cream); font-family:var(--sign); font-size:clamp(24px,4.6vw,40px); padding:12px 44px; border-radius:999px; border:4px solid var(--ink); box-shadow:inset 0 0 0 6px var(--cream); transform:rotate(-2deg)}
 .beach-head p{margin:0; max-width:44ch; font-weight:600}
+.beach-head .side{display:grid; gap:14px; justify-items:start}
 .shells{max-width:1084px; margin:0 auto; display:grid; grid-template-columns:repeat(auto-fill, minmax(140px,1fr)); gap:22px 16px}
 .shell{display:grid; justify-items:center; text-align:center; gap:4px; min-width:0}
 .shell svg{width:74px; height:auto}
@@ -247,6 +258,8 @@ button,input{font:inherit; color:inherit}
       <span class="plaque">SANTA CRUZ, CALIFORNIA</span>
     </div>
     <p class="tagline">Challenges are hidden from the redwoods to the sand. Do one, submit the form, and your slug moves <b>downhill toward the Boardwalk</b>. I think Sammy said slow and steady wins… but going fast is also fun.</p>
+    <a class="cta" id="ctaHero" href="#" target="_blank" rel="noopener">Submit a challenge <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h12M12 6l6 6-6 6" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <p class="cta-note">Opens the Google Form. Sign in with your UCSC account.</p>
     <div class="scoreboard" aria-label="Hunt totals">
       <div><span class="k">SLUGS IN</span><span class="v" id="sPlayers">–</span></div>
       <div><span class="k">CHALLENGES DONE</span><span class="v" id="sFinds">–</span></div>
@@ -488,17 +501,24 @@ button,input{font:inherit; color:inherit}
 <section class="beach" aria-labelledby="beachTitle">
   <div class="beach-head">
     <h2 class="surfboard" id="beachTitle">Beachcombing</h2>
-    <p>Every challenge is a shell on the beach, with how many slugs have done it. ★ challenges are worth double. Faded shells are still waiting for their first slug.</p>
+    <div class="side">
+      <p>Every challenge is a shell on the beach, with how many slugs have done it. ★ challenges are worth double. Faded shells are still waiting for their first slug.</p>
+      <a class="cta surf form-link" href="#" target="_blank" rel="noopener">Did one? Submit it <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h12M12 6l6 6-6 6" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    </div>
   </div>
   <div class="shells" id="shells"></div>
   <p class="foot">Each challenge counts once per resident. Ties go to whoever got there first. ★ challenges count double. The board refreshes on its own every few minutes.</p>
 </section>
+
+<a class="cta fab form-link" id="fab" href="#" target="_blank" rel="noopener" hidden>Submit <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h12M12 6l6 6-6 6" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
 
 <script>
 /* ============ EDIT THIS ============ */
 const CONFIG = {
   subtitle: "Stevenson and Cowell College · Fall Quarter 2026",
   // Google Sheet → File → Share → Publish to web → pick the PUBLIC tab → CSV → copy link.
+  // The Google Form residents submit to (the Submit buttons open it)
+  formUrl: "https://forms.gle/b4hrALNC7227GygE6",
   sheetCsvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRPW40dX3getNnKKBq3g9STuKE__ETOewV64ika6lMC_C25y8w_8yXqtBdQ_i0OKs8lZ1y1b0WjEa3G/pub?gid=33729022&single=true&output=csv",
   totalClues: 10,                // how many challenges there are this quarter
   // Every challenge, worded exactly like the form's options. They all show on the beach from day one.
@@ -855,6 +875,10 @@ async function load(){
 }
 
 $("subtitle").textContent = CONFIG.subtitle;
+document.querySelectorAll("#ctaHero, .form-link").forEach(a => a.href = CONFIG.formUrl);
+if ("IntersectionObserver" in window){
+  new IntersectionObserver(([e]) => { $("fab").hidden = e.isIntersecting; }).observe($("ctaHero"));
+}
 $("q").addEventListener("input", renderScores);
 $("moreBtn").addEventListener("click", () => { state.showAll = true; renderScores(); });
 $("refresh").addEventListener("click", load);
