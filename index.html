@@ -1,5 +1,15 @@
 <title>Slug Search</title>
 <!-- Visit counter (private stats at slug.goatcounter.com). No cookies, no personal data. -->
+<script>
+  // Where a visit came from: a ?ref=flyer style tag on the link wins, then the site they clicked from,
+  // and visits with neither (typed address, bookmark, QR scan) get a readable label instead of "(unknown)".
+  window.goatcounter = {
+    referrer: function (ref) {
+      var q = new URLSearchParams(location.search);
+      return q.get("ref") || q.get("utm_source") || ref || "Typed URL / bookmark / QR";
+    }
+  };
+</script>
 <script data-goatcounter="https://slug.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
